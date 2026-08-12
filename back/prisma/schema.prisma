@@ -1,0 +1,242 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+
+  jars           Jar[]
+  incomes        Income[]
+  months         Month[]
+  transfers      Transfer[]
+  persons        Person[]
+  debts          Debt[]
+  historyActions HistoryAction[]
+  settings       Settings?
+}
+
+enum JarType {
+  SPENDING
+  SAVINGS
+}
+
+model Jar {
+  id             String   @id @default(cuid())
+  userId         String
+  name           String
+  color          String?
+  type           JarType  @default(SPENDING)
+  defaultPercent Decimal  @default(0) @db.Decimal(5, 2)
+  balance        Decimal  @default(0) @db.Decimal(14, 2)
+  order          Int      @default(0)
+  archived       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  user                      User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  incomeAllocations         IncomeAllocation[]
+  expenses                  Expense[]
+  transfersFrom             Transfer[]                 @relation("TransferFromJar")
+  transfersTo               Transfer[]                 @relation("TransferToJar")
+  debtAllocations           DebtAllocation[]
+  debtRepaymentAllocations  DebtRepaymentAllocation[]
+
+  @@index([userId])
+}
+
+model Income {
+  id          String   @id @default(cuid())
+  userId      String
+  amount      Decimal  @db.Decimal(14, 2)
+  description String?
+  source      String?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  allocations IncomeAllocation[]
+
+  @@index([userId])
+}
+
+model IncomeAllocation {
+  id       String  @id @default(cuid())
+  incomeId String
+  jarId    String
+  amount   Decimal @db.Decimal(14, 2)
+  percent  Decimal @db.Decimal(5, 2)
+
+  income Income @relation(fields: [incomeId], references: [id], onDelete: Cascade)
+  jar    Jar    @relation(fields: [jarId], references: [id], onDelete: Restrict)
+
+  @@index([incomeId])
+  @@index([jarId])
+}
+
+model Month {
+  id     String @id @default(cuid())
+  userId String
+  year   Int
+  month  Int
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  days Day[]
+
+  @@unique([userId, year, month])
+}
+
+model Day {
+  id      String   @id @default(cuid())
+  monthId String
+  date    DateTime
+
+  month    Month     @relation(fields: [monthId], references: [id], onDelete: Cascade)
+  expenses Expense[]
+
+  @@unique([monthId, date])
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  dayId       String
+  jarId       String
+  amount      Decimal  @db.Decimal(14, 2)
+  description String
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  day Day @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  jar Jar @relation(fields: [jarId], references: [id], onDelete: Restrict)
+
+  @@index([dayId])
+  @@index([jarId])
+}
+
+model Transfer {
+  id          String   @id @default(cuid())
+  userId      String
+  fromJarId   String
+  toJarId     String
+  amount      Decimal  @db.Decimal(14, 2)
+  description String?
+  createdAt   DateTime @default(now())
+
+  user    User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fromJar Jar  @relation("TransferFromJar", fields: [fromJarId], references: [id], onDelete: Restrict)
+  toJar   Jar  @relation("TransferToJar", fields: [toJarId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+}
+
+model Person {
+  id     String  @id @default(cuid())
+  userId String
+  name   String
+  note   String?
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  debts Debt[]
+
+  @@index([userId])
+}
+
+enum DebtType {
+  I_OWE
+  OWED_TO_ME
+}
+
+enum DebtStatus {
+  ACTIVE
+  PARTIALLY_REPAID
+  REPAID
+  FORGIVEN
+}
+
+model Debt {
+  id          String     @id @default(cuid())
+  userId      String
+  personId    String
+  type        DebtType
+  amount      Decimal    @db.Decimal(14, 2)
+  description String?
+  status      DebtStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  person      Person           @relation(fields: [personId], references: [id], onDelete: Restrict)
+  allocations DebtAllocation[]
+  repayments  DebtRepayment[]
+
+  @@index([userId])
+  @@index([personId])
+}
+
+model DebtAllocation {
+  id     String  @id @default(cuid())
+  debtId String
+  jarId  String
+  amount Decimal @db.Decimal(14, 2)
+
+  debt Debt @relation(fields: [debtId], references: [id], onDelete: Cascade)
+  jar  Jar  @relation(fields: [jarId], references: [id], onDelete: Restrict)
+
+  @@index([debtId])
+  @@index([jarId])
+}
+
+model DebtRepayment {
+  id        String   @id @default(cuid())
+  debtId    String
+  amount    Decimal  @db.Decimal(14, 2)
+  forgiven  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  debt        Debt                       @relation(fields: [debtId], references: [id], onDelete: Cascade)
+  allocations DebtRepaymentAllocation[]
+
+  @@index([debtId])
+}
+
+model DebtRepaymentAllocation {
+  id          String  @id @default(cuid())
+  repaymentId String
+  jarId       String
+  amount      Decimal @db.Decimal(14, 2)
+
+  repayment DebtRepayment @relation(fields: [repaymentId], references: [id], onDelete: Cascade)
+  jar       Jar           @relation(fields: [jarId], references: [id], onDelete: Restrict)
+
+  @@index([repaymentId])
+  @@index([jarId])
+}
+
+model HistoryAction {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  summary   String
+  payload   Json
+  undone    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Settings {
+  id        String  @id @default(cuid())
+  userId    String  @unique
+  dailyNorm Decimal? @db.Decimal(14, 2)
+  currency  String  @default("KZT")
+  theme     String  @default("system")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
