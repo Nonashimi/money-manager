@@ -17,22 +17,12 @@ type Schema = z.output<typeof schema>;
 const state = reactive<Partial<Schema>>({ amount: undefined, description: undefined, source: undefined });
 const loading = ref(false);
 const useCustomSplit = ref(false);
-const customPercents = reactive<Record<string, number>>({});
 
-watch(useCustomSplit, (on) => {
-  if (on) {
-    for (const jar of jarsStore.activeJars) customPercents[jar.id] = Number(jar.defaultPercent);
-  }
-});
-
-const customTotal = computed(() =>
-  jarsStore.activeJars.reduce((sum, jar) => sum + (customPercents[jar.id] ?? 0), 0),
-);
-const isCustomValid = computed(() => !useCustomSplit.value || Math.abs(customTotal.value - 100) < 0.01);
+const allocator = usePercentAllocator(computed(() => jarsStore.activeJars));
+const isCustomValid = computed(() => !useCustomSplit.value || allocator.isValid.value);
 
 // Live preview of how the income will split across jars — default percents, or the
-// in-progress manual split. Normalized against whatever the segments currently sum to, so
-// the bar always renders as a full strip even while the manual total is mid-edit / invalid.
+// in-progress manual split (only jars still checked "in").
 interface PreviewSegment {
   jarId: string;
   name: string;
@@ -40,16 +30,20 @@ interface PreviewSegment {
   percent: number;
 }
 
-const previewSegments = computed<PreviewSegment[]>(() =>
-  jarsStore.activeJars
+const previewSegments = computed<PreviewSegment[]>(() => {
+  const source = useCustomSplit.value
+    ? jarsStore.activeJars.filter((jar) => allocator.included[jar.id] !== false)
+    : jarsStore.activeJars;
+
+  return source
     .map((jar) => ({
       jarId: jar.id,
       name: jar.name,
       color: jar.color || '#6366f1',
-      percent: useCustomSplit.value ? (customPercents[jar.id] ?? 0) : Number(jar.defaultPercent),
+      percent: useCustomSplit.value ? (allocator.percents[jar.id] ?? 0) : Number(jar.defaultPercent),
     }))
-    .filter((seg) => seg.percent > 0),
-);
+    .filter((seg) => seg.percent > 0);
+});
 const previewTotal = computed(() => previewSegments.value.reduce((sum, seg) => sum + seg.percent, 0));
 
 function segmentWidth(percent: number): number {
@@ -66,9 +60,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     const body: Record<string, unknown> = { ...event.data };
     if (useCustomSplit.value) {
-      body.allocations = jarsStore.activeJars.map((jar) => ({
-        jarId: jar.id,
-        percent: customPercents[jar.id] ?? 0,
+      body.allocations = allocator.includedIds.value.map((jarId) => ({
+        jarId,
+        percent: allocator.percents[jarId] ?? 0,
       }));
     }
     await api('/incomes', { method: 'POST', body });
@@ -132,12 +126,31 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     </div>
 
     <div v-if="useCustomSplit" class="space-y-2 border-l-2 border-default pl-3">
+      <div class="flex justify-end">
+        <UButton size="xs" color="neutral" variant="ghost" @click="allocator.distributeEvenly">Поровну</UButton>
+      </div>
       <div v-for="jar in jarsStore.activeJars" :key="jar.id" class="flex items-center gap-3">
-        <span class="flex-1 min-w-0 truncate text-sm">{{ jar.name }}</span>
-        <UInputNumber v-model="customPercents[jar.id]" :min="0" :max="100" size="sm" class="w-24 shrink-0" />
+        <UCheckbox
+          :model-value="allocator.included[jar.id]"
+          @update:model-value="(v: boolean) => allocator.toggleIncluded(jar.id, v)"
+        />
+        <span class="flex-1 min-w-0 truncate text-sm" :class="{ 'text-dimmed': !allocator.included[jar.id] }">
+          {{ jar.name }}
+        </span>
+        <UInputNumber
+          :model-value="allocator.percents[jar.id]"
+          :disabled="!allocator.included[jar.id]"
+          :min="0"
+          :max="100"
+          size="sm"
+          class="w-24 shrink-0"
+          @update:model-value="(v: number) => allocator.setPercent(jar.id, v)"
+        />
         <span class="text-muted text-sm shrink-0">%</span>
       </div>
-      <p :class="isCustomValid ? 'text-muted' : 'text-error'" class="text-sm">Сумма: {{ customTotal }}%</p>
+      <p :class="allocator.isValid.value ? 'text-muted' : 'text-error'" class="text-sm">
+        Сумма: {{ allocator.total.value }}%
+      </p>
     </div>
 
     <UButton type="submit" block :loading="loading" :disabled="!isCustomValid">Добавить доход</UButton>

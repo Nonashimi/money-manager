@@ -33,26 +33,12 @@ async function handleArchive(jar: Jar) {
   toast.add({ title: `«${jar.name}» архивирована`, color: 'neutral' });
 }
 
-// Manual reallocation panel
-const percents = reactive<Record<string, number>>({});
-
-watch(
-  () => jarsStore.activeJars,
-  (list) => {
-    for (const jar of list) {
-      if (!(jar.id in percents)) percents[jar.id] = Number(jar.defaultPercent);
-    }
-  },
-  { immediate: true },
-);
-
-const percentTotal = computed(() =>
-  jarsStore.activeJars.reduce((sum, jar) => sum + (percents[jar.id] ?? 0), 0),
-);
-const isReallocateValid = computed(() => Math.abs(percentTotal.value - 100) < 0.01);
+// Manual reallocation panel — always sums to 100 automatically, see usePercentAllocator.
+const allocator = usePercentAllocator(computed(() => jarsStore.activeJars));
 
 async function saveReallocation() {
-  const allocations = jarsStore.activeJars.map((jar) => ({ jarId: jar.id, percent: percents[jar.id] ?? 0 }));
+  // The endpoint requires every active jar to be present (unchecked ones just carry 0%).
+  const allocations = jarsStore.activeJars.map((jar) => ({ jarId: jar.id, percent: allocator.percents[jar.id] ?? 0 }));
   await jarsStore.reallocate(allocations);
   toast.add({ title: 'Проценты обновлены', color: 'success' });
 }
@@ -102,21 +88,37 @@ const isTransferOpen = ref(false);
 
     <UCard v-if="jarsStore.activeJars.length > 1">
       <template #header>
-        <h2 class="font-medium">Перераспределить проценты вручную</h2>
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="font-medium">Перераспределить проценты</h2>
+          <UButton size="xs" color="neutral" variant="ghost" @click="allocator.distributeEvenly">Поровну</UButton>
+        </div>
       </template>
 
       <div class="space-y-3">
         <div v-for="jar in jarsStore.activeJars" :key="jar.id" class="flex items-center gap-3">
-          <span class="flex-1 min-w-0 truncate">{{ jar.name }}</span>
-          <UInputNumber v-model="percents[jar.id]" :min="0" :max="100" class="w-28 shrink-0" />
+          <UCheckbox
+            :model-value="allocator.included[jar.id]"
+            @update:model-value="(v: boolean) => allocator.toggleIncluded(jar.id, v)"
+          />
+          <span class="flex-1 min-w-0 truncate" :class="{ 'text-dimmed': !allocator.included[jar.id] }">
+            {{ jar.name }}
+          </span>
+          <UInputNumber
+            :model-value="allocator.percents[jar.id]"
+            :disabled="!allocator.included[jar.id]"
+            :min="0"
+            :max="100"
+            class="w-28 shrink-0"
+            @update:model-value="(v: number) => allocator.setPercent(jar.id, v)"
+          />
           <span class="text-muted shrink-0">%</span>
         </div>
       </div>
 
       <template #footer>
         <div class="flex items-center justify-between flex-wrap gap-2">
-          <span :class="isReallocateValid ? 'text-muted' : 'text-error'">Сумма: {{ percentTotal }}%</span>
-          <UButton :disabled="!isReallocateValid" @click="saveReallocation">Сохранить распределение</UButton>
+          <span :class="allocator.isValid.value ? 'text-muted' : 'text-error'">Сумма: {{ allocator.total.value }}%</span>
+          <UButton :disabled="!allocator.isValid.value" @click="saveReallocation">Сохранить распределение</UButton>
         </div>
       </template>
     </UCard>
