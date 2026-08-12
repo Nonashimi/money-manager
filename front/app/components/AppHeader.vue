@@ -30,6 +30,11 @@ const menuItems = [
   [{ label: 'Настройки', icon: 'i-lucide-settings', to: '/settings' }],
   [{ label: 'Выйти', icon: 'i-lucide-log-out', onSelect: logout }],
 ];
+
+const accountLinks = [
+  { label: 'Настройки', icon: 'i-lucide-settings', to: '/settings' },
+  { label: 'Выйти', icon: 'i-lucide-log-out', onSelect: logout },
+];
 </script>
 
 <template>
@@ -44,6 +49,12 @@ const menuItems = [
     </template>
 
     <UNavigationMenu :items="links" />
+
+    <template #body>
+      <UNavigationMenu :items="links" orientation="vertical" class="-mx-2.5" />
+      <USeparator class="my-4" />
+      <UNavigationMenu :items="accountLinks" orientation="vertical" class="-mx-2.5" />
+    </template>
 
     <template #right>
       <UColorModeButton />
