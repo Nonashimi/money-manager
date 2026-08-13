@@ -31,7 +31,7 @@ export class AuthService {
       },
     });
 
-    return this.buildTokenResponse(user.id, user.email, user.name);
+    return this.buildTokenResponse(user);
   }
 
   async login(dto: LoginDto) {
@@ -45,14 +45,14 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    return this.buildTokenResponse(user.id, user.email, user.name);
+    return this.buildTokenResponse(user);
   }
 
-  private buildTokenResponse(userId: string, email: string, name: string | null) {
-    const accessToken = this.jwtService.sign({ sub: userId, email });
+  private buildTokenResponse(user: { id: string; email: string; name: string | null; createdAt: Date }) {
+    const accessToken = this.jwtService.sign({ sub: user.id, email: user.email });
     return {
       accessToken,
-      user: { id: userId, email, name },
+      user: { id: user.id, email: user.email, name: user.name, createdAt: user.createdAt },
     };
   }
 }

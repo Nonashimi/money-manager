@@ -5,28 +5,50 @@ import { DateRangeDto } from './dto/date-range.dto';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+/**
+ * Expenses are dated by calendar day (`Day.date` is always UTC midnight of that day, see
+ * board.service.ts's toCalendarDate), independent of what instant "now" actually is. `to` must
+ * cover the *entire* calendar day it names, or a same-day expense added before the current UTC
+ * instant catches up to that day's UTC midnight (e.g. the early-morning hours for any UTC+
+ * timezone) would fall after `to` and silently vanish from every stats query.
+ */
+function endOfCalendarDay(date: Date): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) + MS_PER_DAY - 1);
+}
+
 @Injectable()
 export class StatisticsService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Defaults to the last 30 days, but never starts before the user's first-ever expense —
-   * otherwise a brand-new user's average gets diluted by days before they used the app at all.
+   * Defaults to a `days`-day lookback (30 if unspecified), but never starts before the user's
+   * first-ever expense — otherwise a "week"/"month" preset would divide the total by days that
+   * predate any history at all, artificially deflating the average. `allTime` skips the lookback
+   * window entirely and starts from the first expense itself, uncapped — used for the standalone
+   * "average per day" stat, which is meant to stay stable regardless of the period picker.
+   * An explicit `from` (the custom date-range picker) bypasses all of this — deliberate user choice.
    */
   private async resolveRange(userId: string, dto: DateRangeDto) {
-    const to = dto.to ? new Date(dto.to) : new Date();
+    const now = dto.to ? new Date(dto.to) : new Date();
+    const to = endOfCalendarDay(now);
     if (dto.from) {
       return { from: new Date(dto.from), to };
     }
 
-    const last30 = new Date(to.getTime() - 29 * MS_PER_DAY);
+    const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
     const firstExpense = await this.prisma.expense.findFirst({
       where: { day: { month: { userId } } },
       orderBy: { day: { date: 'asc' } },
       include: { day: true },
     });
 
-    const from = firstExpense && firstExpense.day.date.getTime() > last30.getTime() ? firstExpense.day.date : last30;
+    if (dto.allTime) {
+      return { from: firstExpense?.day.date ?? todayStart, to };
+    }
+
+    const lookbackDays = dto.days ?? 30;
+    const windowStart = new Date(todayStart.getTime() - (lookbackDays - 1) * MS_PER_DAY);
+    const from = firstExpense && firstExpense.day.date.getTime() > windowStart.getTime() ? firstExpense.day.date : windowStart;
     return { from, to };
   }
 

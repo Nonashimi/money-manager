@@ -232,11 +232,12 @@ model HistoryAction {
 }
 
 model Settings {
-  id        String  @id @default(cuid())
-  userId    String  @unique
+  id        String   @id @default(cuid())
+  userId    String   @unique
   dailyNorm Decimal? @db.Decimal(14, 2)
-  currency  String  @default("KZT")
-  theme     String  @default("system")
+  currency  String   @default("KZT")
+  theme     String   @default("system")
+  seenTours String[] @default([])
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

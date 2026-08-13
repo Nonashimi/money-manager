@@ -1,28 +1,29 @@
 export interface AuthUser {
-  id: string;
-  email: string;
-  name: string | null;
+  id: string
+  email: string
+  name: string | null
+  createdAt: string
 }
 
 export const useAuthStore = defineStore('auth', () => {
   const token = useCookie<string | null>('mm_token', {
     default: () => null,
     maxAge: 60 * 60 * 24 * 30,
-    sameSite: 'lax',
-  });
-  const user = ref<AuthUser | null>(null);
+    sameSite: 'lax'
+  })
+  const user = ref<AuthUser | null>(null)
 
-  const isAuthenticated = computed(() => !!token.value);
+  const isAuthenticated = computed(() => !!token.value)
 
   function setSession(accessToken: string, sessionUser: AuthUser) {
-    token.value = accessToken;
-    user.value = sessionUser;
+    token.value = accessToken
+    user.value = sessionUser
   }
 
   function logout() {
-    token.value = null;
-    user.value = null;
+    token.value = null
+    user.value = null
   }
 
-  return { token, user, isAuthenticated, setSession, logout };
-});
+  return { token, user, isAuthenticated, setSession, logout }
+})

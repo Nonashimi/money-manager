@@ -4,3 +4,60 @@
 @theme static {
   --font-sans: 'Public Sans', sans-serif;
 }
+
+/* Onboarding tour (driver.js) — themed to match Nuxt UI tokens, see useOnboardingTour composable.
+   Selector is compound (.driver-popover.mm-tour-popover) so it always outranks driver.css's own
+   `.driver-popover { background-color: #fff }`, regardless of which stylesheet loads last. */
+.driver-popover.mm-tour-popover {
+  background: var(--ui-bg-elevated);
+  color: var(--ui-text);
+  border: 1px solid var(--ui-border);
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 45px -20px rgb(0 0 0 / 0.5);
+  font-family: var(--font-sans, inherit);
+  padding: 1.1rem;
+}
+.mm-tour-popover .driver-popover-title {
+  color: var(--ui-text-highlighted);
+  font-size: 0.95rem;
+}
+.mm-tour-popover .driver-popover-description {
+  color: var(--ui-text-muted);
+  font-size: 0.875rem;
+}
+.mm-tour-popover .driver-popover-progress-text {
+  color: var(--ui-text-dimmed);
+}
+.mm-tour-popover .driver-popover-close-btn {
+  color: var(--ui-text-dimmed);
+}
+.mm-tour-popover .driver-popover-close-btn:hover,
+.mm-tour-popover .driver-popover-close-btn:focus {
+  color: var(--ui-text-highlighted);
+}
+.mm-tour-popover .driver-popover-footer-btn {
+  background: var(--ui-bg-accented);
+  color: var(--ui-text);
+  border: 1px solid var(--ui-border);
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.8rem;
+}
+.mm-tour-popover .driver-popover-footer-btn:hover,
+.mm-tour-popover .driver-popover-footer-btn:focus {
+  background: var(--ui-bg-inverted);
+  color: var(--ui-text-inverted);
+}
+.mm-tour-popover .driver-popover-next-btn {
+  background: var(--ui-primary);
+  border-color: var(--ui-primary);
+  color: var(--ui-bg);
+}
+.mm-tour-popover .driver-popover-next-btn:hover,
+.mm-tour-popover .driver-popover-next-btn:focus {
+  background: var(--ui-primary);
+  color: var(--ui-bg);
+  opacity: 0.9;
+}
+.mm-tour-popover .driver-popover-arrow {
+  border-color: var(--ui-bg-elevated);
+}

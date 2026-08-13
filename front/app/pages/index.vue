@@ -1,55 +1,166 @@
 <script setup lang="ts">
-const authStore = useAuthStore();
-const jarsStore = useJarsStore();
+import type { DriveStep } from 'driver.js'
 
-await useAsyncData('dashboard-jars', () => jarsStore.fetchJars());
+const authStore = useAuthStore()
+const jarsStore = useJarsStore()
 
-const totalSpendable = computed(() =>
-  jarsStore.spendingJars.reduce((sum, jar) => sum + Number(jar.balance), 0),
-);
-const totalSavings = computed(() =>
-  jarsStore.savingsJars.reduce((sum, jar) => sum + Number(jar.balance), 0),
-);
+await useAsyncData('dashboard-jars', () => jarsStore.fetchJars())
 
-const isIncomeOpen = ref(false);
-const toast = useToast();
+function buildTourSteps(): DriveStep[] {
+  const steps: DriveStep[] = [
+    {
+      element: '[data-tour="total-spendable"]',
+      popover: {
+        title: 'Доступно к тратам',
+        description: 'Сумма всех расходных копилок — то, что реально можно потратить прямо сейчас.',
+        side: 'bottom',
+        align: 'start'
+      }
+    },
+    {
+      element: '[data-tour="total-savings"]',
+      popover: {
+        title: 'Накоплено',
+        description: 'Деньги в накопительных копилках. Они отложены и не входят в сумму к тратам.',
+        side: 'bottom',
+        align: 'start'
+      }
+    },
+    {
+      element: '[data-tour="add-income-btn"]',
+      popover: {
+        title: 'Добавить доход',
+        description: 'Каждый доход автоматически распределяется по копилкам согласно их процентам — или вручную, если включить ручное разделение.',
+        side: 'bottom',
+        align: 'start'
+      }
+    },
+    {
+      element: '[data-tour="manage-jars-btn"]',
+      popover: {
+        title: 'Копилки',
+        description: 'Здесь настраиваются сами копилки: название, тип, цвет и доля в процентах от каждого дохода.',
+        side: 'bottom',
+        align: 'start'
+      }
+    }
+  ]
 
-async function handleArchive(jar: { id: string; name: string }) {
-  await jarsStore.archiveJar(jar.id);
-  toast.add({ title: `«${jar.name}» архивирована`, color: 'neutral' });
+  steps.push(
+    jarsStore.activeJars.length
+      ? {
+          element: '[data-tour="jar-cards"]',
+          popover: {
+            title: 'Ваши копилки',
+            description: 'Каждая карточка — одна копилка со своим балансом, цветом и долей от каждого дохода.',
+            side: 'top',
+            align: 'start'
+          }
+        }
+      : {
+          element: '[data-tour="empty-jars"]',
+          popover: {
+            title: 'С чего начать',
+            description: 'Копилок пока нет — создайте первую, чтобы было куда распределять доход.',
+            side: 'top',
+            align: 'start'
+          }
+        }
+  )
+
+  return steps
 }
 
-const greetingName = computed(() => authStore.user?.name || authStore.user?.email?.split('@')[0]);
+onMounted(async () => {
+  const { hasSeenTour, markTourSeen } = useOnboarding()
+  if (await hasSeenTour('dashboard')) return
+  createTour(buildTourSteps(), () => markTourSeen('dashboard')).drive()
+})
+
+const totalSpendable = computed(() =>
+  jarsStore.spendingJars.reduce((sum, jar) => sum + Number(jar.balance), 0)
+)
+const totalSavings = computed(() =>
+  jarsStore.savingsJars.reduce((sum, jar) => sum + Number(jar.balance), 0)
+)
+
+const isIncomeOpen = ref(false)
+const toast = useToast()
+
+async function handleArchive(jar: { id: string, name: string }) {
+  await jarsStore.archiveJar(jar.id)
+  toast.add({ title: `«${jar.name}» архивирована`, color: 'neutral' })
+}
+
+const greetingName = computed(() => authStore.user?.name || authStore.user?.email?.split('@')[0])
 </script>
 
 <template>
   <UContainer class="py-8 space-y-8">
-    <p class="text-muted">С возвращением, {{ greetingName }}</p>
+    <p class="text-muted">
+      С возвращением, {{ greetingName }}
+    </p>
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div
+        data-tour="total-spendable"
         class="relative overflow-hidden rounded-2xl border border-default bg-gradient-to-br from-primary/15 via-elevated to-elevated px-6 py-8 sm:col-span-2 sm:px-8"
       >
-        <p class="text-sm text-muted">Доступно к тратам</p>
-        <p class="mt-2 text-4xl font-semibold tabular-nums sm:text-5xl">{{ formatMoney(totalSpendable) }}</p>
+        <p class="text-sm text-muted">
+          Доступно к тратам
+        </p>
+        <p class="mt-2 text-4xl font-semibold tabular-nums sm:text-5xl">
+          {{ formatMoney(totalSpendable) }}
+        </p>
         <div class="mt-6 flex flex-wrap gap-2">
-          <UButton icon="i-lucide-plus" size="lg" @click="isIncomeOpen = true">Добавить доход</UButton>
-          <UButton to="/jars" color="neutral" variant="subtle" size="lg">Управление копилками</UButton>
+          <UButton
+            data-tour="add-income-btn"
+            icon="i-lucide-plus"
+            size="lg"
+            @click="isIncomeOpen = true"
+          >
+            Добавить доход
+          </UButton>
+          <UButton
+            data-tour="manage-jars-btn"
+            to="/jars"
+            color="neutral"
+            variant="subtle"
+            size="lg"
+          >
+            Управление копилками
+          </UButton>
         </div>
       </div>
 
-      <div class="rounded-2xl border border-default bg-elevated/50 px-6 py-8">
+      <div
+        data-tour="total-savings"
+        class="rounded-2xl border border-default bg-elevated/50 px-6 py-8"
+      >
         <p class="flex items-center gap-1.5 text-sm text-muted">
-          <UIcon name="i-lucide-vault" class="size-4" />
+          <UIcon
+            name="i-lucide-vault"
+            class="size-4"
+          />
           Накоплено
         </p>
-        <p class="mt-2 text-3xl font-semibold tabular-nums">{{ formatMoney(totalSavings) }}</p>
-        <p class="mt-1 text-xs text-muted">Не входит в сумму к тратам</p>
+        <p class="mt-2 text-3xl font-semibold tabular-nums">
+          {{ formatMoney(totalSavings) }}
+        </p>
+        <p class="mt-1 text-xs text-muted">
+          Не входит в сумму к тратам
+        </p>
       </div>
     </div>
 
-    <div v-if="jarsStore.spendingJars.length" class="space-y-3">
-      <h2 class="text-lg font-medium">Расходные копилки</h2>
+    <div
+      v-if="jarsStore.spendingJars.length"
+      data-tour="jar-cards"
+      class="space-y-3"
+    >
+      <h2 class="text-lg font-medium">
+        Расходные копилки
+      </h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <JarCard
           v-for="jar in jarsStore.spendingJars"
@@ -61,8 +172,13 @@ const greetingName = computed(() => authStore.user?.name || authStore.user?.emai
       </div>
     </div>
 
-    <div v-if="jarsStore.savingsJars.length" class="space-y-3">
-      <h2 class="text-lg font-medium">Накопительные копилки</h2>
+    <div
+      v-if="jarsStore.savingsJars.length"
+      class="space-y-3"
+    >
+      <h2 class="text-lg font-medium">
+        Накопительные копилки
+      </h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <JarCard
           v-for="jar in jarsStore.savingsJars"
@@ -74,19 +190,32 @@ const greetingName = computed(() => authStore.user?.name || authStore.user?.emai
       </div>
     </div>
 
-    <UCard v-if="!jarsStore.activeJars.length" class="border-dashed">
+    <UCard
+      v-if="!jarsStore.activeJars.length"
+      data-tour="empty-jars"
+      class="border-dashed"
+    >
       <div class="flex flex-col items-center gap-3 py-6 text-center">
         <span class="flex size-12 items-center justify-center rounded-full bg-primary/10">
-          <UIcon name="i-lucide-piggy-bank" class="size-6 text-primary" />
+          <UIcon
+            name="i-lucide-piggy-bank"
+            class="size-6 text-primary"
+          />
         </span>
         <p class="text-muted">
           Копилок пока нет.
-          <NuxtLink to="/jars" class="text-primary">Создайте первую</NuxtLink>, чтобы начать распределять доход.
+          <NuxtLink
+            to="/jars"
+            class="text-primary"
+          >Создайте первую</NuxtLink>, чтобы начать распределять доход.
         </p>
       </div>
     </UCard>
 
-    <UModal v-model:open="isIncomeOpen" title="Новый доход">
+    <UModal
+      v-model:open="isIncomeOpen"
+      title="Новый доход"
+    >
       <template #body>
         <IncomeForm @created="isIncomeOpen = false" />
       </template>
