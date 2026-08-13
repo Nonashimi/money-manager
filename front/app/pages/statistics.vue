@@ -83,6 +83,19 @@ function onCustomRangeUpdate(value: DateRange | null) {
   }
 }
 
+// Local calendar date, not UTC — "today" must mean the user's own today, same convention as the
+// board page. Sent explicitly as `to` on every request below so the backend always anchors "today"
+// to the browser's local calendar day, not its own server instant: between local midnight and UTC
+// midnight (e.g. 00:00–05:00 for a UTC+5 user), the server's raw `new Date()` is still "yesterday"
+// in UTC, which would silently exclude an expense the user just added "today" from every query.
+function toISODate(d: Date) {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+const todayISO = toISODate(new Date())
+
 // Presets send a day-count, not a computed `from` — the backend clamps that lookback window to
 // the user's first-ever expense (same rule as the old default range), so "Неделя"/"Месяц" never
 // divide the total by days that predate any real history. Only the custom picker sends exact
@@ -92,7 +105,7 @@ const rangeParams = computed(() => {
     return { from: customRange.value.start.toString(), to: customRange.value.end.toString() }
   }
   const preset = period.value === 'custom' ? 'day' : period.value
-  return { days: presetDays[preset] }
+  return { days: presetDays[preset], to: todayISO }
 })
 
 const { data: summary } = await useAsyncData(
@@ -104,11 +117,13 @@ const { data: summary } = await useAsyncData(
 // that jumps around as the period selector changes — so this is a separate, unwatched fetch
 // spanning the full history (from the first-ever expense), independent of `period`.
 const { data: lifetimeSummary } = await useAsyncData('stats-lifetime', () =>
-  api<Summary>('/statistics/summary', { query: { allTime: true } })
+  api<Summary>('/statistics/summary', { query: { allTime: true, to: todayISO } })
 )
-const { data: daily } = await useAsyncData('stats-daily', () => api<DailyPoint[]>('/statistics/daily'), {
-  default: () => [] as DailyPoint[]
-})
+const { data: daily } = await useAsyncData(
+  'stats-daily',
+  () => api<DailyPoint[]>('/statistics/daily', { query: { to: todayISO } }),
+  { default: () => [] as DailyPoint[] }
+)
 const { data: byJar } = await useAsyncData(
   'stats-by-jar',
   () => api<JarBreakdown[]>('/statistics/by-jar', { query: rangeParams.value }),
