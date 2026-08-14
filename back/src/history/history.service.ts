@@ -15,12 +15,38 @@ export class HistoryService {
     private readonly ledger: LedgerService,
   ) {}
 
-  findAll(userId: string, limit = 100) {
-    return this.prisma.historyAction.findMany({
+  async findAll(
+    userId: string,
+    opts: { page?: number; pageSize?: number; types?: string[]; includeUndone?: boolean } = {},
+  ) {
+    const page = opts.page ?? 1;
+    const pageSize = opts.pageSize ?? 20;
+    const where: Prisma.HistoryActionWhereInput = {
+      userId,
+      ...(opts.types?.length ? { type: { in: opts.types } } : {}),
+      ...(opts.includeUndone === false ? { undone: false } : {}),
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.historyAction.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.historyAction.count({ where }),
+    ]);
+    return { items, total, page, pageSize };
+  }
+
+  /** Every action type the user has ever logged — powers the filter modal's checkbox list, independent of the current page/filter. */
+  async getAvailableTypes(userId: string) {
+    const rows = await this.prisma.historyAction.findMany({
       where: { userId },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
+      distinct: ['type'],
+      select: { type: true },
     });
+    return rows.map((r) => r.type);
   }
 
   async undoLast(userId: string) {

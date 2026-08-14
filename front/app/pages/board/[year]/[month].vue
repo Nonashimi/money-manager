@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { CalendarDate, type DateValue } from '@internationalized/date'
 import type { DriveStep } from 'driver.js'
 import type { ExpenseCard } from '../../../components/KanbanColumn.vue'
 
@@ -36,7 +37,10 @@ const today = new Date()
 const isCurrentMonth = computed(() => year.value === today.getFullYear() && month.value === today.getMonth() + 1)
 
 const daysInMonth = computed(() => new Date(year.value, month.value, 0).getDate())
-const selectedDay = ref(isCurrentMonth.value ? today.getDate() : 1)
+// A day picked in a different month (via the calendar modal) travels here as ?day=N, since
+// navigating to /board/{year}/{month} remounts this page and would otherwise reset the selection.
+const dayFromQuery = Number(route.query.day)
+const selectedDay = ref(dayFromQuery > 0 && dayFromQuery <= daysInMonth.value ? dayFromQuery : isCurrentMonth.value ? today.getDate() : 1)
 
 const selectedDate = computed(() => toISODate(year.value, month.value, selectedDay.value))
 
@@ -73,6 +77,19 @@ const monthLabel = computed(() =>
   new Date(year.value, month.value - 1, 1).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })
 )
 
+const isDatePickerOpen = ref(false)
+const datePickerValue = computed<DateValue>(() => new CalendarDate(year.value, month.value, selectedDay.value))
+
+function onDatePicked(value: DateValue | undefined) {
+  if (!value) return
+  isDatePickerOpen.value = false
+  if (value.year === year.value && value.month === month.value) {
+    selectedDay.value = value.day
+  } else {
+    router.push({ path: `/board/${value.year}/${value.month}`, query: { day: value.day } })
+  }
+}
+
 onMounted(async () => {
   const { hasSeenTour, markTourSeen } = useOnboarding()
   if (!jarsStore.spendingJars.length || (await hasSeenTour('board'))) return
@@ -85,6 +102,15 @@ onMounted(async () => {
       popover: {
         title: 'Дни месяца',
         description: 'У каждого дня — своя доска расходов. Переключайтесь датами здесь.',
+        side: 'bottom',
+        align: 'start'
+      }
+    },
+    {
+      element: '[data-tour="board-date-picker-btn"]',
+      popover: {
+        title: 'Календарь',
+        description: 'Быстрый переход на любую дату, в том числе в другом месяце.',
         side: 'bottom',
         align: 'start'
       }
@@ -128,11 +154,28 @@ onMounted(async () => {
 
 <template>
   <UContainer class="py-8 space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between flex-wrap gap-2">
       <h1 class="text-2xl font-semibold capitalize">
         {{ monthLabel }}
       </h1>
       <div class="flex gap-2">
+        <UPopover v-model:open="isDatePickerOpen">
+          <UButton
+            data-tour="board-date-picker-btn"
+            icon="i-lucide-calendar-days"
+            color="neutral"
+            variant="ghost"
+          />
+          <template #content>
+            <!-- Same known reka-ui/vue-tsc generic-prop typing gap as the statistics custom-range
+                 picker — runtime is correct (single-date mode), only the prop type is too broad. -->
+            <UCalendar
+              :model-value="(datePickerValue as any)"
+              class="p-2"
+              @update:model-value="(v: any) => onDatePicked(v)"
+            />
+          </template>
+        </UPopover>
         <UButton
           icon="i-lucide-chevron-left"
           color="neutral"

@@ -48,7 +48,7 @@ useSortable(columnEl, localCards, {
   onEnd: handleDragEnd
 })
 
-const isAdding = ref(false)
+const isAddOpen = ref(false)
 const amount = ref<number | undefined>(undefined)
 const description = ref('')
 const submitting = ref(false)
@@ -63,7 +63,7 @@ async function submitCard() {
     })
     amount.value = undefined
     description.value = ''
-    isAdding.value = false
+    isAddOpen.value = false
     emit('changed')
   } catch (error: any) {
     toast.add({ title: 'Не удалось добавить расход', description: error?.data?.message, color: 'error' })
@@ -88,7 +88,7 @@ const accentColor = computed(() => props.jar.color || '#6366f1')
 <template>
   <UCard
     data-tour="board-column"
-    class="min-w-64 flex-1"
+    class="w-[85vw] max-w-sm shrink-0 sm:w-auto sm:max-w-none sm:min-w-64 sm:flex-1 sm:shrink"
   >
     <template #header>
       <div class="flex items-center justify-between gap-2">
@@ -139,52 +139,47 @@ const accentColor = computed(() => props.jar.color || '#6366f1')
     </div>
 
     <template #footer>
-      <div
-        v-if="isAdding"
-        class="space-y-2"
-      >
-        <MoneyInput
-          v-model="amount"
-          :min="0"
-          placeholder="Сумма"
-          class="w-full"
-        />
-        <UInput
-          v-model="description"
-          placeholder="Описание"
-          class="w-full"
-          @keyup.enter="submitCard"
-        />
-        <div class="flex gap-2">
-          <UButton
-            size="sm"
-            :loading="submitting"
-            @click="submitCard"
-          >
-            Добавить
-          </UButton>
-          <UButton
-            size="sm"
-            color="neutral"
-            variant="ghost"
-            @click="isAdding = false"
-          >
-            Отмена
-          </UButton>
-        </div>
-      </div>
       <UButton
-        v-else
         data-tour="board-add-btn"
         icon="i-lucide-plus"
         size="sm"
         color="neutral"
         variant="ghost"
         block
-        @click="isAdding = true"
+        @click="isAddOpen = true"
       >
         Добавить
       </UButton>
     </template>
+
+    <UModal
+      v-model:open="isAddOpen"
+      :title="`Расход — ${jar.name}`"
+    >
+      <template #body>
+        <div class="space-y-3">
+          <MoneyInput
+            v-model="amount"
+            :min="0"
+            placeholder="Сумма"
+            class="w-full"
+          />
+          <UInput
+            v-model="description"
+            placeholder="Описание"
+            class="w-full"
+            @keyup.enter="submitCard"
+          />
+          <UButton
+            block
+            :loading="submitting"
+            :disabled="!amount || amount <= 0"
+            @click="submitCard"
+          >
+            Добавить
+          </UButton>
+        </div>
+      </template>
+    </UModal>
   </UCard>
 </template>

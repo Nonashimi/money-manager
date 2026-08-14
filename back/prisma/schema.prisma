@@ -40,13 +40,13 @@ model Jar {
   archived       Boolean  @default(false)
   createdAt      DateTime @default(now())
 
-  user                      User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  incomeAllocations         IncomeAllocation[]
-  expenses                  Expense[]
-  transfersFrom             Transfer[]                 @relation("TransferFromJar")
-  transfersTo               Transfer[]                 @relation("TransferToJar")
-  debtAllocations           DebtAllocation[]
-  debtRepaymentAllocations  DebtRepaymentAllocation[]
+  user                     User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  incomeAllocations        IncomeAllocation[]
+  expenses                 Expense[]
+  transfersFrom            Transfer[]                @relation("TransferFromJar")
+  transfersTo              Transfer[]                @relation("TransferToJar")
+  debtAllocations          DebtAllocation[]
+  debtRepaymentAllocations DebtRepaymentAllocation[]
 
   @@index([userId])
 }
@@ -198,7 +198,7 @@ model DebtRepayment {
   forgiven  Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  debt        Debt                       @relation(fields: [debtId], references: [id], onDelete: Cascade)
+  debt        Debt                      @relation(fields: [debtId], references: [id], onDelete: Cascade)
   allocations DebtRepaymentAllocation[]
 
   @@index([debtId])
@@ -232,12 +232,13 @@ model HistoryAction {
 }
 
 model Settings {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  dailyNorm Decimal? @db.Decimal(14, 2)
-  currency  String   @default("KZT")
-  theme     String   @default("system")
-  seenTours String[] @default([])
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  dailyNorm        Decimal? @db.Decimal(14, 2)
+  currency         String   @default("KZT")
+  theme            String   @default("system")
+  seenTours        String[] @default([])
+  excludedStatDays String[] @default([])
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

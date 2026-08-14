@@ -116,7 +116,7 @@ const { data: summary } = await useAsyncData(
 // "В среднем в день" and the norm comparison are meant to be a stable baseline, not something
 // that jumps around as the period selector changes — so this is a separate, unwatched fetch
 // spanning the full history (from the first-ever expense), independent of `period`.
-const { data: lifetimeSummary } = await useAsyncData('stats-lifetime', () =>
+const { data: lifetimeSummary, refresh: refreshLifetimeSummary } = await useAsyncData('stats-lifetime', () =>
   api<Summary>('/statistics/summary', { query: { allTime: true, to: todayISO } })
 )
 const { data: daily } = await useAsyncData(
@@ -130,6 +130,38 @@ const { data: byJar } = await useAsyncData(
   { default: () => [] as JarBreakdown[], watch: [rangeParams] }
 )
 await useAsyncData('stats-jars', () => jarsStore.fetchJars(true))
+
+const { data: settings } = await useAsyncData('stats-settings', () => api<{ excludedStatDays: string[] }>('/settings'))
+const excludedDays = computed(() => new Set(settings.value?.excludedStatDays ?? []))
+const isExcludeDaysOpen = ref(false)
+const togglingDay = ref<string | null>(null)
+
+// Only days that actually had spending are worth curating — an empty day contributes nothing to
+// the average either way, so listing it would just be noise.
+const spentDays = computed(() =>
+  [...(daily.value ?? [])].reverse().filter(d => Number(d.total) > 0)
+)
+
+async function toggleExcludedDay(date: string, keepInAverage: boolean) {
+  togglingDay.value = date
+  const next = new Set(excludedDays.value)
+  if (keepInAverage) {
+    next.delete(date)
+  } else {
+    next.add(date)
+  }
+  try {
+    settings.value = await api<{ excludedStatDays: string[] }>('/settings', { method: 'PATCH', body: { excludedStatDays: Array.from(next) } })
+    await refreshLifetimeSummary()
+  } finally {
+    togglingDay.value = null
+  }
+}
+
+function formatDayLabel(dateStr: string) {
+  const [y = 1970, m = 1, d = 1] = dateStr.split('-').map(Number)
+  return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(y, m - 1, d))
+}
 
 // Match each jar's own color (from JarForm's palette) instead of a generic chart palette,
 // so the doughnut matches what the user sees on the jar cards and kanban board.
@@ -186,6 +218,15 @@ onMounted(async () => {
       }
     },
     {
+      element: '[data-tour="stats-exclude-days"]',
+      popover: {
+        title: 'Дни в среднем',
+        description: 'Разовая крупная покупка искажает «обычный день» — снимите такой день здесь, и он перестанет учитываться в среднем.',
+        side: 'bottom',
+        align: 'end'
+      }
+    },
+    {
       element: '[data-tour="stats-period"]',
       popover: {
         title: 'Период',
@@ -222,10 +263,22 @@ onMounted(async () => {
     <UCard data-tour="stats-average">
       <template #header>
         <div class="flex items-center justify-between gap-2">
-          <h2 class="font-medium">
-            Обычный день
-          </h2>
-          <span class="text-xs text-dimmed">за всё время</span>
+          <div class="flex items-center gap-2">
+            <h2 class="font-medium">
+              Обычный день
+            </h2>
+            <span class="text-xs text-dimmed">за всё время</span>
+          </div>
+          <UButton
+            data-tour="stats-exclude-days"
+            size="xs"
+            color="neutral"
+            variant="ghost"
+            icon="i-lucide-list-checks"
+            @click="isExcludeDaysOpen = true"
+          >
+            Дни в среднем
+          </UButton>
         </div>
       </template>
       <div class="flex items-end justify-between flex-wrap gap-4">
@@ -366,5 +419,49 @@ onMounted(async () => {
         />
       </div>
     </UCard>
+
+    <UModal
+      v-model:open="isExcludeDaysOpen"
+      title="Дни в среднем"
+      description="Снимите день — его сумма перестанет учитываться в «Обычном дне», если он выбивается из ряда (крупная разовая покупка и т.п.)."
+    >
+      <template #body>
+        <div
+          v-if="spentDays.length"
+          class="space-y-1 max-h-96 overflow-y-auto"
+        >
+          <label
+            v-for="d in spentDays"
+            :key="d.date"
+            class="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-elevated cursor-pointer"
+          >
+            <USwitch
+              :model-value="!excludedDays.has(d.date)"
+              :loading="togglingDay === d.date"
+              size="sm"
+              @update:model-value="(v: boolean) => toggleExcludedDay(d.date, v)"
+            />
+            <span
+              class="flex-1 min-w-0 truncate text-sm"
+              :class="{ 'text-dimmed line-through': excludedDays.has(d.date) }"
+            >
+              {{ formatDayLabel(d.date) }}
+            </span>
+            <span
+              class="text-sm tabular-nums shrink-0"
+              :class="excludedDays.has(d.date) ? 'text-dimmed' : ''"
+            >
+              {{ formatMoney(d.total) }}
+            </span>
+          </label>
+        </div>
+        <p
+          v-else
+          class="text-sm text-muted"
+        >
+          Пока нет дней с расходами за последние 30 дней.
+        </p>
+      </template>
+    </UModal>
   </UContainer>
 </template>

@@ -1,4 +1,4 @@
-import { IsBoolean, IsIn, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsDateString, IsIn, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
 export class UpdateSettingsDto {
   @IsOptional()
@@ -23,4 +23,13 @@ export class UpdateSettingsDto {
   @IsOptional()
   @IsBoolean()
   resetTours?: boolean;
+
+  /**
+   * Full replacement list of "yyyy-mm-dd" days to leave out of the lifetime average (an outlier
+   * purchase shouldn't drag the "typical day" figure around) — see StatisticsService.getSummary.
+   */
+  @IsOptional()
+  @IsArray()
+  @IsDateString({}, { each: true })
+  excludedStatDays?: string[];
 }

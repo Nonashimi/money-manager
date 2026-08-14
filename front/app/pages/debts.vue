@@ -98,6 +98,22 @@ const isRepayOpen = computed({
 const forgivingDebt = ref<Debt | null>(null)
 const forgiveLoading = ref(false)
 
+const detailsDebt = ref<Debt | null>(null)
+const isDetailsOpen = computed({
+  get: () => detailsDebt.value !== null,
+  set: (v: boolean) => {
+    if (!v) detailsDebt.value = null
+  }
+})
+
+function jarName(jarId: string) {
+  return jarsStore.jars.find(j => j.id === jarId)?.name ?? 'Копилка'
+}
+
+function formatDateTime(iso: string) {
+  return new Date(iso).toLocaleString('ru-RU')
+}
+
 async function confirmForgive() {
   if (!forgivingDebt.value) return
   forgiveLoading.value = true
@@ -246,35 +262,40 @@ onMounted(async () => {
         v-for="debt in filteredDebts"
         :key="debt.id"
       >
-        <div class="flex items-start justify-between gap-2">
-          <div class="min-w-0">
-            <h3 class="font-medium">
-              {{ debt.person.name }}
-            </h3>
-            <p
-              v-if="debt.description"
-              class="text-sm text-muted truncate"
-            >
-              {{ debt.description }}
-            </p>
-          </div>
-          <UBadge
-            :color="statusColors[debt.status]"
-            variant="subtle"
-          >
-            {{ statusLabels[debt.status] }}
-          </UBadge>
-        </div>
-
-        <p class="text-2xl font-semibold mt-2 tabular-nums">
-          {{ formatMoney(remaining(debt)) }}
-        </p>
-        <p
-          v-if="remaining(debt) !== Number(debt.amount)"
-          class="text-sm text-muted"
+        <div
+          class="cursor-pointer"
+          @click="detailsDebt = debt"
         >
-          из {{ formatMoney(debt.amount) }}
-        </p>
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <h3 class="font-medium">
+                {{ debt.person.name }}
+              </h3>
+              <p
+                v-if="debt.description"
+                class="text-sm text-muted truncate"
+              >
+                {{ debt.description }}
+              </p>
+            </div>
+            <UBadge
+              :color="statusColors[debt.status]"
+              variant="subtle"
+            >
+              {{ statusLabels[debt.status] }}
+            </UBadge>
+          </div>
+
+          <p class="text-2xl font-semibold mt-2 tabular-nums">
+            {{ formatMoney(remaining(debt)) }}
+          </p>
+          <p
+            v-if="remaining(debt) !== Number(debt.amount)"
+            class="text-sm text-muted"
+          >
+            из {{ formatMoney(debt.amount) }}
+          </p>
+        </div>
 
         <div
           v-if="debt.status === 'ACTIVE' || debt.status === 'PARTIALLY_REPAID'"
@@ -282,7 +303,7 @@ onMounted(async () => {
         >
           <UButton
             size="sm"
-            @click="repayingDebt = debt"
+            @click.stop="repayingDebt = debt"
           >
             {{ debt.type === 'OWED_TO_ME' ? 'Вернули' : 'Погасить' }}
           </UButton>
@@ -290,7 +311,7 @@ onMounted(async () => {
             size="sm"
             color="neutral"
             variant="subtle"
-            @click="forgivingDebt = debt"
+            @click.stop="forgivingDebt = debt"
           >
             Простить
           </UButton>
@@ -390,6 +411,89 @@ onMounted(async () => {
               Простить
             </UButton>
           </div>
+        </div>
+      </template>
+    </UModal>
+
+    <UModal
+      v-model:open="isDetailsOpen"
+      :title="detailsDebt?.person.name"
+    >
+      <template #body>
+        <div
+          v-if="detailsDebt"
+          class="space-y-5"
+        >
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <p class="text-muted text-sm">
+                {{ detailsDebt.type === 'OWED_TO_ME' ? 'Мне должны' : 'Я должен' }}
+              </p>
+              <p class="text-2xl font-semibold tabular-nums mt-1">
+                {{ formatMoney(remaining(detailsDebt)) }}
+                <span
+                  v-if="remaining(detailsDebt) !== Number(detailsDebt.amount)"
+                  class="text-base font-normal text-muted"
+                >
+                  из {{ formatMoney(detailsDebt.amount) }}
+                </span>
+              </p>
+            </div>
+            <UBadge
+              :color="statusColors[detailsDebt.status]"
+              variant="subtle"
+            >
+              {{ statusLabels[detailsDebt.status] }}
+            </UBadge>
+          </div>
+
+          <p
+            v-if="detailsDebt.description"
+            class="text-sm whitespace-pre-wrap break-words"
+          >
+            {{ detailsDebt.description }}
+          </p>
+
+          <div>
+            <p class="text-sm font-medium mb-2">
+              {{ detailsDebt.type === 'OWED_TO_ME' ? 'Списано из копилок' : 'План списания с копилок' }}
+            </p>
+            <div class="space-y-1">
+              <div
+                v-for="a in detailsDebt.allocations"
+                :key="a.id"
+                class="flex items-center justify-between text-sm"
+              >
+                <span class="text-muted">{{ jarName(a.jarId) }}</span>
+                <span class="tabular-nums">{{ formatMoney(a.amount) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="detailsDebt.repayments.length">
+            <p class="text-sm font-medium mb-2">
+              История платежей
+            </p>
+            <div class="space-y-2">
+              <div
+                v-for="r in detailsDebt.repayments"
+                :key="r.id"
+                class="flex items-center justify-between text-sm border-b border-default pb-2 last:border-0 last:pb-0"
+              >
+                <div>
+                  <p>{{ r.forgiven ? 'Прощено' : (detailsDebt.type === 'OWED_TO_ME' ? 'Вернули' : 'Погасили') }}</p>
+                  <p class="text-xs text-dimmed">
+                    {{ formatDateTime(r.createdAt) }}
+                  </p>
+                </div>
+                <span class="tabular-nums">{{ formatMoney(r.amount) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-xs text-dimmed">
+            Создан {{ formatDateTime(detailsDebt.createdAt) }}
+          </p>
         </div>
       </template>
     </UModal>

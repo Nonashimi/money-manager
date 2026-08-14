@@ -64,8 +64,22 @@ export class StatisticsService {
     const expenses = await this.findExpenses(userId, from, to);
     const settings = await this.prisma.settings.findUnique({ where: { userId } });
 
-    const total = expenses.reduce((sum, e) => sum.plus(e.amount), new Prisma.Decimal(0));
-    const daysInRange = Math.floor((to.getTime() - from.getTime()) / MS_PER_DAY) + 1;
+    // The "typical day" figure is meant to reflect ordinary spending — a one-off large purchase
+    // shouldn't drag it up, so the user can exclude specific days from it (see excludedStatDays).
+    // Only applies to the allTime query; a period total like "потрачено за неделю" should still
+    // show what was actually spent, not a curated version of it.
+    const excludedDays = dto.allTime ? new Set(settings?.excludedStatDays ?? []) : new Set<string>();
+
+    const total = expenses.reduce((sum, e) => {
+      const key = e.day.date.toISOString().slice(0, 10);
+      return excludedDays.has(key) ? sum : sum.plus(e.amount);
+    }, new Prisma.Decimal(0));
+
+    const excludedInRange = [...excludedDays].filter((dateStr) => {
+      const t = new Date(dateStr).getTime();
+      return t >= from.getTime() && t <= to.getTime();
+    }).length;
+    const daysInRange = Math.floor((to.getTime() - from.getTime()) / MS_PER_DAY) + 1 - excludedInRange;
     const averagePerDay = daysInRange > 0 ? total.dividedBy(daysInRange).toDecimalPlaces(2) : new Prisma.Decimal(0);
     const dailyNorm = settings?.dailyNorm ?? null;
 
