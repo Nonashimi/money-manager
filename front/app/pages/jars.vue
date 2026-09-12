@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { DriveStep } from 'driver.js'
-import type { Jar } from '../stores/jars'
+import type { Jar, JarType } from '../stores/jars'
 
 const jarsStore = useJarsStore()
 const toast = useToast()
@@ -16,13 +16,13 @@ const isEditOpen = computed({
   }
 })
 
-async function handleCreate(payload: { name: string, color?: string, type?: 'SPENDING' | 'SAVINGS', defaultPercent?: number }) {
+async function handleCreate(payload: { name: string, color?: string, type?: JarType, defaultPercent?: number }) {
   await jarsStore.createJar(payload)
   isCreateOpen.value = false
   toast.add({ title: 'Копилка создана', color: 'success' })
 }
 
-async function handleUpdate(payload: { name: string, color?: string, type?: 'SPENDING' | 'SAVINGS', defaultPercent?: number }) {
+async function handleUpdate(payload: { name: string, color?: string, type?: JarType, defaultPercent?: number }) {
   if (!editingJar.value) return
   await jarsStore.updateJar(editingJar.value.id, payload)
   editingJar.value = null
@@ -162,6 +162,24 @@ onMounted(async () => {
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <JarCard
           v-for="jar in jarsStore.savingsJars"
+          :key="jar.id"
+          :jar="jar"
+          @edit="editingJar = $event"
+          @archive="handleArchive"
+        />
+      </div>
+    </div>
+
+    <div
+      v-if="jarsStore.bankJars.length"
+      class="space-y-3"
+    >
+      <h2 class="text-lg font-medium">
+        Банковские
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <JarCard
+          v-for="jar in jarsStore.bankJars"
           :key="jar.id"
           :jar="jar"
           @edit="editingJar = $event"

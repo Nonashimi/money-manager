@@ -26,6 +26,7 @@ model User {
 enum JarType {
   SPENDING
   SAVINGS
+  BANK
 }
 
 model Jar {
@@ -47,6 +48,7 @@ model Jar {
   transfersTo              Transfer[]                @relation("TransferToJar")
   debtAllocations          DebtAllocation[]
   debtRepaymentAllocations DebtRepaymentAllocation[]
+  debtsAsSourceJar         Debt[]                    @relation("DebtSourceJar")
 
   @@index([userId])
 }
@@ -136,10 +138,11 @@ model Transfer {
 }
 
 model Person {
-  id     String  @id @default(cuid())
-  userId String
-  name   String
-  note   String?
+  id       String  @id @default(cuid())
+  userId   String
+  name     String
+  note     String?
+  isSystem Boolean @default(false)
 
   user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   debts Debt[]
@@ -167,10 +170,12 @@ model Debt {
   amount      Decimal    @db.Decimal(14, 2)
   description String?
   status      DebtStatus @default(ACTIVE)
+  sourceJarId String?
   createdAt   DateTime   @default(now())
 
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   person      Person           @relation(fields: [personId], references: [id], onDelete: Restrict)
+  sourceJar   Jar?             @relation("DebtSourceJar", fields: [sourceJarId], references: [id], onDelete: Restrict)
   allocations DebtAllocation[]
   repayments  DebtRepayment[]
 

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePersonDto } from './dto/create-person.dto';
 import { UpdatePersonDto } from './dto/update-person.dto';
@@ -8,7 +8,7 @@ export class PersonService {
   constructor(private readonly prisma: PrismaService) {}
 
   findAll(userId: string) {
-    return this.prisma.person.findMany({ where: { userId }, orderBy: { name: 'asc' } });
+    return this.prisma.person.findMany({ where: { userId, isSystem: false }, orderBy: { name: 'asc' } });
   }
 
   async findOneOrThrow(userId: string, id: string) {
@@ -24,12 +24,18 @@ export class PersonService {
   }
 
   async update(userId: string, id: string, dto: UpdatePersonDto) {
-    await this.findOneOrThrow(userId, id);
+    const person = await this.findOneOrThrow(userId, id);
+    if (person.isSystem) {
+      throw new BadRequestException('Cannot modify a system contact');
+    }
     return this.prisma.person.update({ where: { id }, data: dto });
   }
 
   async remove(userId: string, id: string) {
-    await this.findOneOrThrow(userId, id);
+    const person = await this.findOneOrThrow(userId, id);
+    if (person.isSystem) {
+      throw new BadRequestException('Cannot delete a system contact');
+    }
     await this.prisma.person.delete({ where: { id } });
     return { id };
   }

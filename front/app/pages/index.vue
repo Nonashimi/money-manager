@@ -83,6 +83,9 @@ const totalSpendable = computed(() =>
 const totalSavings = computed(() =>
   jarsStore.savingsJars.reduce((sum, jar) => sum + Number(jar.balance), 0)
 )
+const totalBank = computed(() =>
+  jarsStore.bankJars.reduce((sum, jar) => sum + Number(jar.balance), 0)
+)
 
 const isIncomeOpen = ref(false)
 const toast = useToast()
@@ -101,7 +104,7 @@ const greetingName = computed(() => authStore.user?.name || authStore.user?.emai
       С возвращением, {{ greetingName }}
     </p>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
       <div
         data-tour="total-spendable"
         class="relative overflow-hidden rounded-2xl border border-default bg-gradient-to-br from-primary/15 via-elevated to-elevated px-6 py-8 sm:col-span-2 sm:px-8"
@@ -151,6 +154,26 @@ const greetingName = computed(() => authStore.user?.name || authStore.user?.emai
           Не входит в сумму к тратам
         </p>
       </div>
+
+      <div
+        v-if="jarsStore.bankJars.length"
+        data-tour="total-bank"
+        class="rounded-2xl border border-default bg-elevated/50 px-6 py-8"
+      >
+        <p class="flex items-center gap-1.5 text-sm text-muted">
+          <UIcon
+            name="i-lucide-landmark"
+            class="size-4"
+          />
+          В банке
+        </p>
+        <p class="mt-2 text-3xl font-semibold tabular-nums">
+          {{ formatMoney(totalBank) }}
+        </p>
+        <p class="mt-1 text-xs text-muted">
+          Не входит в сумму к тратам
+        </p>
+      </div>
     </div>
 
     <div
@@ -182,6 +205,24 @@ const greetingName = computed(() => authStore.user?.name || authStore.user?.emai
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <JarCard
           v-for="jar in jarsStore.savingsJars"
+          :key="jar.id"
+          :jar="jar"
+          @edit="navigateTo('/jars')"
+          @archive="handleArchive"
+        />
+      </div>
+    </div>
+
+    <div
+      v-if="jarsStore.bankJars.length"
+      class="space-y-3"
+    >
+      <h2 class="text-lg font-medium">
+        Банковские копилки
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <JarCard
+          v-for="jar in jarsStore.bankJars"
           :key="jar.id"
           :jar="jar"
           @edit="navigateTo('/jars')"

@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
 export class CreateTransferDto {
   @IsString()
@@ -14,4 +14,9 @@ export class CreateTransferDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  /** Only valid when the source jar is type BANK — records the transfer as a self-debt to that jar. */
+  @IsOptional()
+  @IsBoolean()
+  asLoan?: boolean;
 }

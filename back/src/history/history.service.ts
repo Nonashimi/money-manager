@@ -182,12 +182,18 @@ export class HistoryService {
     const repaymentId = payload.repaymentId as string;
     const type = payload.type as DebtType | undefined;
     const allocations = payload.allocations as JarAmountEntry[] | undefined;
+    const sourceJarId = payload.sourceJarId as string | undefined;
+    const amount = payload.amount as string | undefined;
 
     if (allocations && type) {
       for (const a of allocations) {
         const delta = type === DebtType.OWED_TO_ME ? new Prisma.Decimal(a.amount).negated() : new Prisma.Decimal(a.amount);
         await this.ledger.adjustJarBalance(tx, userId, a.jarId, delta);
       }
+    }
+
+    if (sourceJarId && amount) {
+      await this.ledger.adjustJarBalance(tx, userId, sourceJarId, new Prisma.Decimal(amount).negated());
     }
 
     await tx.debtRepayment.delete({ where: { id: repaymentId } });

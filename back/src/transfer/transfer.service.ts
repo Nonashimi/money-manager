@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { JarType, Prisma } from '@prisma/client';
+import { DebtService } from '../debt/debt.service';
 import { LedgerService } from '../ledger/ledger.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTransferDto } from './dto/create-transfer.dto';
@@ -9,6 +10,7 @@ export class TransferService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ledger: LedgerService,
+    private readonly debtService: DebtService,
   ) {}
 
   findAll(userId: string) {
@@ -32,6 +34,21 @@ export class TransferService {
         throw new BadRequestException('Both jars must belong to the user and be active');
       }
 
+      const fromJar = jars.find((j) => j.id === dto.fromJarId);
+      const toJar = jars.find((j) => j.id === dto.toJarId);
+      if (!fromJar || !toJar) {
+        throw new BadRequestException('Both jars must belong to the user and be active');
+      }
+
+      if (dto.asLoan) {
+        if (fromJar.type !== JarType.BANK) {
+          throw new BadRequestException('Only transfers out of a bank jar can be recorded as a debt');
+        }
+        if (toJar.type === JarType.BANK) {
+          throw new BadRequestException('Cannot record a transfer into another bank jar as a debt');
+        }
+      }
+
       await this.ledger.adjustJarBalance(tx, userId, dto.fromJarId, amount.negated());
       await this.ledger.adjustJarBalance(tx, userId, dto.toJarId, amount);
 
@@ -45,6 +62,14 @@ export class TransferService {
         toJarId: dto.toJarId,
         amount: amount.toString(),
       });
+
+      if (dto.asLoan) {
+        await this.debtService.createSelfDebt(tx, userId, {
+          amount,
+          sourceJarId: dto.fromJarId,
+          description: dto.description || `«${fromJar.name}» → «${toJar.name}»`,
+        });
+      }
 
       return transfer;
     });

@@ -21,6 +21,7 @@ interface Debt {
   status: 'ACTIVE' | 'PARTIALLY_REPAID' | 'REPAID' | 'FORGIVEN'
   createdAt: string
   person: Person
+  sourceJar: { id: string, name: string } | null
   allocations: DebtAllocation[]
   repayments: DebtRepayment[]
 }
@@ -276,6 +277,13 @@ onMounted(async () => {
                 class="text-sm text-muted truncate"
               >
                 {{ debt.description }}
+              </p>
+              <p
+                v-if="debt.sourceJar"
+                class="text-xs text-muted flex items-center gap-1 mt-0.5"
+              >
+                <UIcon name="i-lucide-landmark" class="size-3" />
+                вернётся в «{{ debt.sourceJar.name }}»
               </p>
             </div>
             <UBadge

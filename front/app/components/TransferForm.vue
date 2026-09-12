@@ -13,6 +13,7 @@ const schema = z
     toJarId: z.string().min(1, 'Выберите копилку'),
     amount: z.number().positive('Введите сумму'),
     description: z.string().optional(),
+    asLoan: z.boolean().optional(),
   })
   .refine((v) => v.fromJarId !== v.toJarId, { message: 'Копилки должны отличаться', path: ['toJarId'] });
 
@@ -23,10 +24,18 @@ const state = reactive<Partial<Schema>>({
   toJarId: undefined,
   amount: undefined,
   description: undefined,
+  asLoan: false,
 });
 
 const jarOptions = computed(() => jarsStore.activeJars.map((j) => ({ label: j.name, value: j.id })));
 const loading = ref(false);
+
+const fromJar = computed(() => jarsStore.activeJars.find((j) => j.id === state.fromJarId));
+const isFromBank = computed(() => fromJar.value?.type === 'BANK');
+
+watch(isFromBank, (value) => {
+  if (!value) state.asLoan = false;
+});
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   loading.value = true;
@@ -57,6 +66,18 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     <UFormField label="Описание" name="description">
       <UInput v-model="state.description" class="w-full" />
     </UFormField>
+
+    <div v-if="isFromBank" class="flex items-start gap-2 rounded-lg border border-default px-3 py-2.5">
+      <UCheckbox v-model="state.asLoan" />
+      <div>
+        <p class="text-sm font-medium">Оформить как долг</p>
+        <p class="text-xs text-muted">
+          Сумма попадёт в «Я должен» на контакт «Себе» — когда вы её вернёте, деньги автоматически вернутся в
+          «{{ fromJar?.name }}».
+        </p>
+      </div>
+    </div>
+
     <UButton type="submit" block :loading="loading">Перелить</UButton>
   </UForm>
 </template>

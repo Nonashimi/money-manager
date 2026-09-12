@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DebtStatus, DebtType, JarType, Prisma } from '@prisma/client';
-import { LedgerService } from '../ledger/ledger.service';
+import { LedgerService, Tx } from '../ledger/ledger.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBulkDebtDto } from './dto/create-bulk-debt.dto';
 import { CreateDebtDto } from './dto/create-debt.dto';
@@ -22,7 +22,7 @@ export class DebtService {
   findAll(userId: string, type?: DebtType) {
     return this.prisma.debt.findMany({
       where: { userId, ...(type ? { type } : {}) },
-      include: { person: true, allocations: true, repayments: { include: { allocations: true } } },
+      include: { person: true, sourceJar: true, allocations: true, repayments: { include: { allocations: true } } },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -86,6 +86,44 @@ export class DebtService {
   }
 
   /**
+   * Called from TransferService within the same transaction when a transfer out of a BANK jar
+   * is marked "оформить как долг". The transfer itself already moved the balance, so this debt
+   * only records that the amount must eventually be returned to `sourceJarId` — see repay().
+   */
+  async createSelfDebt(tx: Tx, userId: string, params: { amount: Prisma.Decimal; sourceJarId: string; description: string }) {
+    const person = await this.findOrCreateSelfContact(tx, userId);
+
+    const debt = await tx.debt.create({
+      data: {
+        userId,
+        personId: person.id,
+        type: DebtType.I_OWE,
+        amount: params.amount,
+        description: params.description,
+        sourceJarId: params.sourceJarId,
+      },
+    });
+
+    await this.ledger.logAction(
+      tx,
+      userId,
+      'DEBT_CREATE',
+      `Взяли в долг у себя ${formatAmount(params.amount)} — ${params.description}`,
+      { debtId: debt.id, type: DebtType.I_OWE, allocations: [] },
+    );
+
+    return debt;
+  }
+
+  private async findOrCreateSelfContact(tx: Tx, userId: string) {
+    const existing = await tx.person.findFirst({ where: { userId, isSystem: true } });
+    if (existing) {
+      return existing;
+    }
+    return tx.person.create({ data: { userId, name: 'Себе', isSystem: true } });
+  }
+
+  /**
    * Creates one OWED_TO_ME debt per person in `entries`, all funded from the same combined
    * jar allocation (e.g. you paid a bill and split the reimbursement across several friends).
    * Each jar is debited once for its total share; every individual debt's own `DebtAllocation`
@@ -143,7 +181,7 @@ export class DebtService {
       }
 
       const breakdown = this.formatAllocations(jars, dto.allocations);
-      const names = dto.entries.map((e) => personById.get(e.personId)!.name).join(', ');
+      const names = dto.entries.map((e) => personById.get(e.personId)?.name ?? '?').join(', ');
       const summary = `Дали в долг ${formatAmount(entriesTotal)} нескольким (${names}) — списано из: ${breakdown}`;
 
       await this.ledger.logAction(tx, userId, 'DEBT_CREATE_BULK', summary, {
@@ -187,7 +225,7 @@ export class DebtService {
         });
         return tx.debt.findUniqueOrThrow({
           where: { id: debtId },
-          include: { allocations: true, repayments: { include: { allocations: true } }, person: true },
+          include: { allocations: true, repayments: { include: { allocations: true } }, person: true, sourceJar: true },
         });
       }
 
@@ -220,6 +258,12 @@ export class DebtService {
         await this.ledger.adjustJarBalance(tx, userId, a.jarId, delta);
       }
 
+      let sourceJar: { id: string; name: string } | null = null;
+      if (debt.sourceJarId) {
+        sourceJar = await tx.jar.findUniqueOrThrow({ where: { id: debt.sourceJarId } });
+        await this.ledger.adjustJarBalance(tx, userId, debt.sourceJarId, amount);
+      }
+
       const repayment = await tx.debtRepayment.create({
         data: {
           debtId,
@@ -233,21 +277,26 @@ export class DebtService {
       await tx.debt.update({ where: { id: debtId }, data: { status } });
 
       const breakdown = this.formatAllocations(jars, allocations);
-      const summary =
-        debt.type === DebtType.OWED_TO_ME
-          ? `Возврат долга ${formatAmount(amount)} (${debt.person.name}) — зачислено в: ${breakdown}`
-          : `Погашение долга ${formatAmount(amount)} (${debt.person.name}) — списано из: ${breakdown}`;
+      let summary: string;
+      if (sourceJar) {
+        summary = `Возврат долга себе ${formatAmount(amount)} — списано из: ${breakdown}, зачислено в «${sourceJar.name}»`;
+      } else if (debt.type === DebtType.OWED_TO_ME) {
+        summary = `Возврат долга ${formatAmount(amount)} (${debt.person.name}) — зачислено в: ${breakdown}`;
+      } else {
+        summary = `Погашение долга ${formatAmount(amount)} (${debt.person.name}) — списано из: ${breakdown}`;
+      }
       await this.ledger.logAction(tx, userId, 'DEBT_REPAY', summary, {
         debtId,
         repaymentId: repayment.id,
         type: debt.type,
         amount: amount.toString(),
         allocations: allocations.map((a) => ({ jarId: a.jarId, amount: a.amount.toString() })),
+        ...(debt.sourceJarId ? { sourceJarId: debt.sourceJarId } : {}),
       });
 
       return tx.debt.findUniqueOrThrow({
         where: { id: debtId },
-        include: { allocations: true, repayments: { include: { allocations: true } }, person: true },
+        include: { allocations: true, repayments: { include: { allocations: true } }, person: true, sourceJar: true },
       });
     });
   }

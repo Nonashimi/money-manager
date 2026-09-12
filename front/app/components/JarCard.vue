@@ -6,7 +6,12 @@ const emit = defineEmits<{ edit: [jar: Jar]; archive: [jar: Jar] }>();
 
 const accentColor = computed(() => props.jar.color || '#6366f1');
 const isSavings = computed(() => props.jar.type === 'SAVINGS');
-const icon = computed(() => (isSavings.value ? 'i-lucide-vault' : 'i-lucide-piggy-bank'));
+const isBank = computed(() => props.jar.type === 'BANK');
+const icon = computed(() => {
+  if (isSavings.value) return 'i-lucide-vault';
+  if (isBank.value) return 'i-lucide-landmark';
+  return 'i-lucide-piggy-bank';
+});
 </script>
 
 <template>
@@ -23,6 +28,7 @@ const icon = computed(() => (isSavings.value ? 'i-lucide-vault' : 'i-lucide-pigg
           </span>
           <h3 class="font-medium truncate text-highlighted">{{ jar.name }}</h3>
           <UBadge v-if="isSavings" color="neutral" variant="subtle" size="sm">Накопительная</UBadge>
+          <UBadge v-if="isBank" color="neutral" variant="subtle" size="sm">Банк</UBadge>
         </div>
         <p class="text-3xl font-semibold mt-3 tabular-nums">{{ formatMoney(jar.balance) }}</p>
         <p class="text-sm text-muted mt-1">{{ formatPercent(jar.defaultPercent) }} от дохода</p>

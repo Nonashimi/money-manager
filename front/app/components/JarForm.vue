@@ -24,12 +24,13 @@ const COLOR_PALETTE = [
 const TYPE_OPTIONS: { value: JarType; label: string; description: string; icon: string }[] = [
   { value: 'SPENDING', label: 'Расходная', description: 'Деньги на текущие траты', icon: 'i-lucide-piggy-bank' },
   { value: 'SAVINGS', label: 'Накопительная', description: 'Копим, не тратим', icon: 'i-lucide-vault' },
+  { value: 'BANK', label: 'Банк', description: 'Карта/счёт — переливы можно оформить как долг', icon: 'i-lucide-landmark' },
 ];
 
 const schema = z.object({
   name: z.string().min(1, 'Введите название'),
   color: z.string().optional(),
-  type: z.enum(['SPENDING', 'SAVINGS']).optional(),
+  type: z.enum(['SPENDING', 'SAVINGS', 'BANK']).optional(),
   defaultPercent: z.number().min(0).max(100).optional(),
 });
 
@@ -61,7 +62,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     </UFormField>
 
     <UFormField label="Тип" name="type">
-      <div class="grid grid-cols-2 gap-2">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <button
           v-for="option in TYPE_OPTIONS"
           :key="option.value"
@@ -84,6 +85,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       <p v-if="state.type === 'SAVINGS'" class="mt-2 text-xs text-muted">
         В накопительную копилку нельзя добавлять расходы и использовать её в долгах — только переливы и доля от
         дохода.
+      </p>
+      <p v-if="state.type === 'BANK'" class="mt-2 text-xs text-muted">
+        В банковскую копилку нельзя добавлять расходы и использовать её в долгах. При переливе из неё можно отметить
+        сумму как долг себе — тогда после возврата деньги придут обратно сюда.
       </p>
     </UFormField>
 
