@@ -31,9 +31,9 @@ const jarOptions = computed(() => jarsStore.activeJars.map((j) => ({ label: j.na
 const loading = ref(false);
 
 const fromJar = computed(() => jarsStore.activeJars.find((j) => j.id === state.fromJarId));
-const isFromBank = computed(() => fromJar.value?.type === 'BANK');
+const isFromSavings = computed(() => fromJar.value?.type === 'SAVINGS');
 
-watch(isFromBank, (value) => {
+watch(isFromSavings, (value) => {
   if (!value) state.asLoan = false;
 });
 
@@ -67,7 +67,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       <UInput v-model="state.description" class="w-full" />
     </UFormField>
 
-    <div v-if="isFromBank" class="flex items-start gap-2 rounded-lg border border-default px-3 py-2.5">
+    <div v-if="isFromSavings" class="flex items-start gap-2 rounded-lg border border-default px-3 py-2.5">
       <UCheckbox v-model="state.asLoan" />
       <div>
         <p class="text-sm font-medium">Оформить как долг</p>

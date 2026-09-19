@@ -41,11 +41,11 @@ export class TransferService {
       }
 
       if (dto.asLoan) {
-        if (fromJar.type !== JarType.BANK) {
-          throw new BadRequestException('Only transfers out of a bank jar can be recorded as a debt');
+        if (fromJar.type !== JarType.SAVINGS) {
+          throw new BadRequestException('Only transfers out of a savings jar can be recorded as a debt');
         }
-        if (toJar.type === JarType.BANK) {
-          throw new BadRequestException('Cannot record a transfer into another bank jar as a debt');
+        if (toJar.type === JarType.SAVINGS) {
+          throw new BadRequestException('Cannot record a transfer into another savings jar as a debt');
         }
       }
 

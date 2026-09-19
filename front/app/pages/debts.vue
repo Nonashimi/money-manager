@@ -282,7 +282,7 @@ onMounted(async () => {
                 v-if="debt.sourceJar"
                 class="text-xs text-muted flex items-center gap-1 mt-0.5"
               >
-                <UIcon name="i-lucide-landmark" class="size-3" />
+                <UIcon name="i-lucide-vault" class="size-3" />
                 вернётся в «{{ debt.sourceJar.name }}»
               </p>
             </div>
@@ -359,6 +359,7 @@ onMounted(async () => {
           v-if="repayingDebt"
           :debt-id="repayingDebt.id"
           :remaining="remaining(repayingDebt)"
+          :require-split="repayingDebt.allocations.length === 0"
           @done="
             repayingDebt = null;
             refresh();

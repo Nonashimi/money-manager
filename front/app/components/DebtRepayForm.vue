@@ -2,7 +2,7 @@
 import * as z from 'zod';
 import type { FormSubmitEvent } from '@nuxt/ui';
 
-const props = defineProps<{ debtId: string; remaining: number }>();
+const props = defineProps<{ debtId: string; remaining: number; requireSplit?: boolean }>();
 const emit = defineEmits<{ done: [] }>();
 
 const jarsStore = useJarsStore();
@@ -13,7 +13,7 @@ const schema = z.object({ amount: z.number().positive().max(props.remaining, 'Б
 type Schema = z.output<typeof schema>;
 
 const state = reactive<Partial<Schema>>({ amount: props.remaining });
-const useCustomSplit = ref(false);
+const useCustomSplit = ref(props.requireSplit ?? false);
 const jarAmounts = reactive<Record<string, number>>({});
 
 const allocatedTotal = computed(() =>
@@ -66,8 +66,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     </UFormField>
 
     <div class="flex items-center gap-2">
-      <USwitch v-model="useCustomSplit" />
-      <span class="text-sm">Указать копилки вручную (иначе — как при создании долга)</span>
+      <USwitch v-model="useCustomSplit" :disabled="requireSplit" />
+      <span class="text-sm">{{ requireSplit ? 'Выберите расходные копилки, из которых вернёте долг' : 'Указать копилки вручную (иначе — как при создании долга)' }}</span>
     </div>
 
     <div v-if="useCustomSplit" class="space-y-2 border-l-2 border-default pl-3">

@@ -1,4 +1,4 @@
-export type JarType = 'SPENDING' | 'SAVINGS' | 'BANK';
+export type JarType = 'SPENDING' | 'SAVINGS';
 
 export interface Jar {
   id: string;
@@ -19,7 +19,6 @@ export const useJarsStore = defineStore('jars', () => {
   const activeJars = computed(() => jars.value.filter((j) => !j.archived));
   const spendingJars = computed(() => activeJars.value.filter((j) => j.type === 'SPENDING'));
   const savingsJars = computed(() => activeJars.value.filter((j) => j.type === 'SAVINGS'));
-  const bankJars = computed(() => activeJars.value.filter((j) => j.type === 'BANK'));
 
   async function fetchJars(includeArchived = false) {
     loading.value = true;
@@ -64,7 +63,6 @@ export const useJarsStore = defineStore('jars', () => {
     activeJars,
     spendingJars,
     savingsJars,
-    bankJars,
     loading,
     fetchJars,
     createJar,

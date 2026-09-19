@@ -26,7 +26,6 @@ model User {
 enum JarType {
   SPENDING
   SAVINGS
-  BANK
 }
 
 model Jar {

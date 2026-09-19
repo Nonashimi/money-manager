@@ -1,6 +1,3 @@
--- AlterEnum
-ALTER TYPE "JarType" ADD VALUE 'BANK';
-
 -- AlterTable
 ALTER TABLE "Debt" ADD COLUMN     "sourceJarId" TEXT;
 

@@ -15,7 +15,7 @@ export class CreateTransferDto {
   @IsString()
   description?: string;
 
-  /** Only valid when the source jar is type BANK — records the transfer as a self-debt to that jar. */
+  /** Only valid when the source jar is type SAVINGS — records the transfer as a self-debt to that jar. */
   @IsOptional()
   @IsBoolean()
   asLoan?: boolean;

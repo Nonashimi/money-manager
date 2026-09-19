@@ -36,8 +36,8 @@ export class BoardService {
       if (!jar) {
         throw new BadRequestException('Jar not found or archived');
       }
-      if (jar.type !== JarType.SPENDING) {
-        throw new BadRequestException('Cannot add expenses to a non-spending jar');
+      if (jar.type === JarType.SAVINGS) {
+        throw new BadRequestException('Cannot add expenses to a savings jar');
       }
 
       const day = await this.findOrCreateDay(tx, userId, date);
@@ -72,8 +72,8 @@ export class BoardService {
         if (!jar) {
           throw new BadRequestException('Target jar not found or archived');
         }
-        if (jar.type !== JarType.SPENDING) {
-          throw new BadRequestException('Cannot move expenses into a non-spending jar');
+        if (jar.type === JarType.SAVINGS) {
+          throw new BadRequestException('Cannot move expenses into a savings jar');
         }
       }
 

@@ -86,7 +86,7 @@ export class DebtService {
   }
 
   /**
-   * Called from TransferService within the same transaction when a transfer out of a BANK jar
+   * Called from TransferService within the same transaction when a transfer out of a SAVINGS jar
    * is marked "оформить как долг". The transfer itself already moved the balance, so this debt
    * only records that the amount must eventually be returned to `sourceJarId` — see repay().
    */
@@ -232,6 +232,10 @@ export class DebtService {
       const amount = dto.amount !== undefined ? new Prisma.Decimal(dto.amount) : remaining;
       if (amount.lessThanOrEqualTo(0) || amount.minus(remaining).greaterThan(EPSILON)) {
         throw new BadRequestException('Repayment amount must be between 0 and the remaining debt amount');
+      }
+
+      if (!dto.allocations && debt.allocations.length === 0) {
+        throw new BadRequestException('This debt has no saved jar split — choose the jars to repay from');
       }
 
       const allocations = dto.allocations
