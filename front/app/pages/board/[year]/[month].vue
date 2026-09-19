@@ -68,6 +68,12 @@ const columnsData = computed(() => {
   return map
 })
 
+// Expenses debit the jar the moment they're added, so `balance` is already what's left.
+const totalAvailable = computed(() => jarsStore.spendingJars.reduce((sum, jar) => sum + Number(jar.balance), 0))
+const daySpent = computed(() =>
+  (selectedDayData.value?.expenses ?? []).reduce((sum, exp) => sum + Number(exp.amount), 0)
+)
+
 function goToMonth(deltaMonths: number) {
   const d = new Date(year.value, month.value - 1 + deltaMonths, 1)
   router.push(`/board/${d.getFullYear()}/${d.getMonth() + 1}`)
@@ -206,6 +212,31 @@ onMounted(async () => {
       >
         {{ day }}
       </UButton>
+    </div>
+
+    <div
+      v-if="jarsStore.spendingJars.length"
+      class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+    >
+      <div class="rounded-2xl border border-default bg-elevated/50 px-5 py-4">
+        <p class="text-sm text-muted">
+          Всего доступно к тратам
+        </p>
+        <p
+          class="mt-1 text-2xl font-semibold tabular-nums"
+          :class="totalAvailable < 0 ? 'text-error' : ''"
+        >
+          {{ formatMoney(totalAvailable) }}
+        </p>
+      </div>
+      <div class="rounded-2xl border border-default bg-elevated/50 px-5 py-4">
+        <p class="text-sm text-muted">
+          Потрачено в этот день
+        </p>
+        <p class="mt-1 text-2xl font-semibold tabular-nums">
+          {{ formatMoney(daySpent) }}
+        </p>
+      </div>
     </div>
 
     <p

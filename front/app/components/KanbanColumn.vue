@@ -82,6 +82,7 @@ async function removeCard(id: string) {
 }
 
 const columnTotal = computed(() => localCards.value.reduce((sum, c) => sum + Number(c.amount), 0))
+const isNegative = computed(() => Number(props.jar.balance) < 0)
 const accentColor = computed(() => props.jar.color || '#6366f1')
 </script>
 
@@ -99,7 +100,16 @@ const accentColor = computed(() => props.jar.color || '#6366f1')
           />
           {{ jar.name }}
         </span>
-        <span class="text-sm text-muted shrink-0 tabular-nums">{{ formatMoney(columnTotal) }}</span>
+        <span
+          class="text-sm font-medium shrink-0 tabular-nums"
+          :class="isNegative ? 'text-error' : 'text-highlighted'"
+        >
+          {{ formatMoney(jar.balance) }}
+        </span>
+      </div>
+      <div class="flex items-center justify-between gap-2 mt-1 text-xs text-muted">
+        <span>Остаток в копилке</span>
+        <span class="tabular-nums">за день: {{ formatMoney(columnTotal) }}</span>
       </div>
     </template>
 
