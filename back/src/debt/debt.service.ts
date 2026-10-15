@@ -57,6 +57,7 @@ export class DebtService {
           type: dto.type,
           amount,
           description: dto.description,
+          color: dto.color,
           allocations: {
             create: dto.allocations.map((a) => ({ jarId: a.jarId, amount: new Prisma.Decimal(a.amount) })),
           },
@@ -181,6 +182,7 @@ export class DebtService {
             type: DebtType.OWED_TO_ME,
             amount,
             description: dto.description,
+            color: dto.color,
             allocations: { create: personAllocations.map((a) => ({ jarId: a.jarId, amount: a.amount })) },
           },
           include: { allocations: true, person: true },

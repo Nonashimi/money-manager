@@ -26,6 +26,8 @@ const schema = z.object({
 });
 type Schema = z.output<typeof schema>;
 
+const color = ref<string>(JAR_COLOR_PALETTE[0]!);
+
 const state = reactive<Partial<Schema>>({
   personId: undefined,
   personIds: [],
@@ -98,7 +100,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       const entries = (state.personIds ?? []).map((personId) => ({ personId, amount: event.data.amount }));
       await api('/debts/bulk', {
         method: 'POST',
-        body: { entries, description: event.data.description, allocations },
+        body: { entries, description: event.data.description, allocations, color: color.value },
       });
     } else {
       await api('/debts', {
@@ -108,6 +110,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           amount: event.data.amount,
           description: event.data.description,
           type: props.type,
+          color: color.value,
           allocations,
         },
       });
@@ -171,6 +174,22 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
     <UFormField label="Описание" name="description">
       <UInput v-model="state.description" class="w-full" />
+    </UFormField>
+
+    <UFormField label="Цвет карточки" name="color">
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="option in JAR_COLOR_PALETTE"
+          :key="option"
+          type="button"
+          class="size-8 rounded-full flex items-center justify-center transition-transform hover:scale-110"
+          :style="{ backgroundColor: option }"
+          :aria-label="option"
+          @click="color = option"
+        >
+          <UIcon v-if="color === option" name="i-lucide-check" class="size-4 text-white" />
+        </button>
+      </div>
     </UFormField>
 
     <div class="space-y-2">

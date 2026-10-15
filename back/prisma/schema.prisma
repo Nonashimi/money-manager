@@ -170,6 +170,7 @@ model Debt {
   description String?
   status      DebtStatus @default(ACTIVE)
   sourceJarId String?
+  color       String?
   createdAt   DateTime   @default(now())
 
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)

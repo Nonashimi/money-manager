@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  Matches,
   ValidateNested,
 } from 'class-validator';
 import { DebtType } from '@prisma/client';
@@ -30,6 +31,11 @@ export class CreateDebtDto {
   @IsNumber()
   @IsPositive()
   amount: number;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^#[0-9a-fA-F]{6}$/)
+  color?: string;
 
   @IsOptional()
   @IsString()

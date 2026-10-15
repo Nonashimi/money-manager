@@ -19,6 +19,7 @@ interface Debt {
   amount: string
   description: string | null
   status: 'ACTIVE' | 'PARTIALLY_REPAID' | 'REPAID' | 'FORGIVEN'
+  color: string | null
   createdAt: string
   person: Person
   sourceJar: { id: string, name: string } | null
@@ -271,7 +272,7 @@ onMounted(async () => {
         v-for="debt in filteredDebts"
         :key="debt.id"
         class="rug rug--padded"
-        :style="jarRugStyle(DEBT_RUG[debt.status])"
+        :style="jarRugStyle(debt.color ?? DEBT_RUG[debt.status])"
       >
         <div
           class="cursor-pointer"
