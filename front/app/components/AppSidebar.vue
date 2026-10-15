@@ -26,7 +26,7 @@ async function logout() {
   <aside class="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col gap-1 border-r border-default bg-muted px-3 py-5 lg:flex">
     <NuxtLink
       to="/"
-      class="mb-4 flex items-center gap-2 px-2 font-bold text-highlighted"
+      class="mb-2 flex items-center gap-2 px-2 font-extrabold text-highlighted"
     >
       <span class="flex size-7 items-center justify-center rounded-lg bg-primary">
         <UIcon
@@ -36,6 +36,7 @@ async function logout() {
       </span>
       Money Manager
     </NuxtLink>
+    <div class="orn mb-3 ml-2 !h-2 !w-24 rounded-[1px]" />
 
     <NuxtLink
       v-for="link in links"

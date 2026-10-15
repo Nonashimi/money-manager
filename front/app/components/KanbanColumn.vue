@@ -91,22 +91,19 @@ const accentColor = computed(() => props.jar.color || '#6366f1')
     data-tour="board-column"
     class="flex min-h-48 flex-col gap-3 rounded-xl border border-default bg-elevated p-3"
   >
-    <div class="flex items-center justify-between gap-2 px-1">
-      <span class="flex min-w-0 items-center gap-2 font-semibold text-highlighted">
-        <span
-          class="size-2.5 shrink-0 rounded-full"
-          :style="{ backgroundColor: accentColor }"
-        />
-        <span class="truncate">{{ jar.name }}</span>
-      </span>
+    <div
+      class="rug rug--compact flex min-h-16 items-start justify-between gap-2"
+      :style="jarRugStyle(jar.color)"
+    >
+      <span class="truncate pt-1 text-[15px] font-extrabold">{{ jar.name }}</span>
       <span
-        class="shrink-0 text-sm font-medium tabular-nums"
-        :class="isNegative ? 'text-error' : 'text-muted'"
+        class="shrink-0 text-lg font-extrabold tabular-nums"
+        :class="isNegative ? 'text-red-200' : ''"
       >
         {{ formatMoney(jar.balance) }}
       </span>
     </div>
-    <p class="-mt-2 px-1 text-xs text-dimmed tabular-nums">
+    <p class="-mt-1 px-1 text-xs text-dimmed tabular-nums">
       за день: {{ formatMoney(columnTotal) }}
     </p>
 

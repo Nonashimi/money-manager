@@ -148,10 +148,10 @@ onMounted(async () => {
       data-tour="jars-spending-grid"
       class="space-y-3"
     >
-      <h2 class="text-lg font-medium">
+      <h2 class="text-xs font-semibold tracking-[0.14em] text-muted uppercase">
         Расходные
       </h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
         <JarCard
           v-for="jar in jarsStore.spendingJars"
           :key="jar.id"
@@ -166,10 +166,10 @@ onMounted(async () => {
       v-if="jarsStore.savingsJars.length"
       class="space-y-3"
     >
-      <h2 class="text-lg font-medium">
+      <h2 class="text-xs font-semibold tracking-[0.14em] text-muted uppercase">
         Накопительные
       </h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
         <JarCard
           v-for="jar in jarsStore.savingsJars"
           :key="jar.id"
@@ -180,12 +180,15 @@ onMounted(async () => {
       </div>
     </div>
 
-    <UCard v-if="jarsStore.activeJars.length > 1">
-      <template #header>
-        <div class="flex items-center justify-between gap-2">
-          <h2 class="font-medium">
-            Перераспределить проценты
-          </h2>
+    <section
+      v-if="jarsStore.activeJars.length > 1"
+      class="space-y-4 rounded-[10px] border border-default bg-elevated p-4"
+    >
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h2 class="font-extrabold text-highlighted">
+          Распределение дохода
+        </h2>
+        <div class="flex items-center gap-2">
           <UButton
             data-tour="jars-even-btn"
             size="xs"
@@ -195,50 +198,67 @@ onMounted(async () => {
           >
             Поровну
           </UButton>
+          <UButton
+            size="sm"
+            :disabled="!allocator.isValid.value"
+            @click="saveReallocation"
+          >
+            Сохранить
+          </UButton>
         </div>
-      </template>
+      </div>
 
       <div class="space-y-3">
         <div
           v-for="jar in jarsStore.activeJars"
           :key="jar.id"
           data-tour="jars-realloc-row"
-          class="flex items-center gap-3"
+          class="space-y-2"
         >
-          <UCheckbox
-            :model-value="allocator.included[jar.id]"
-            @update:model-value="(v: boolean) => allocator.toggleIncluded(jar.id, v)"
-          />
-          <span
-            class="flex-1 min-w-0 truncate"
-            :class="{ 'text-dimmed': !allocator.included[jar.id] }"
+          <div class="flex items-center gap-3">
+            <UCheckbox
+              :model-value="allocator.included[jar.id]"
+              @update:model-value="(v: boolean) => allocator.toggleIncluded(jar.id, v)"
+            />
+            <span
+              class="min-w-0 flex-1 truncate text-sm font-medium"
+              :class="allocator.included[jar.id] ? 'text-default' : 'text-dimmed'"
+            >
+              {{ jar.name }}
+            </span>
+            <UInputNumber
+              :model-value="allocator.percents[jar.id]"
+              :disabled="!allocator.included[jar.id]"
+              :min="0"
+              :max="100"
+              class="w-32 shrink-0"
+              :format-options="{ maximumFractionDigits: 1 }"
+              @update:model-value="(v: number) => allocator.setPercent(jar.id, v)"
+            />
+            <span class="text-sm text-muted">%</span>
+          </div>
+          <div
+            class="ml-8 h-2 overflow-hidden rounded-[2px] bg-accented"
+            role="presentation"
           >
-            {{ jar.name }}
-          </span>
-          <UInputNumber
-            :model-value="allocator.percents[jar.id]"
-            :disabled="!allocator.included[jar.id]"
-            :min="0"
-            :max="100"
-            class="w-28 shrink-0"
-            @update:model-value="(v: number) => allocator.setPercent(jar.id, v)"
-          />
-          <span class="text-muted shrink-0">%</span>
+            <div
+              class="h-full rounded-[2px] transition-[width] duration-500"
+              :style="{
+                width: `${Math.min(100, Math.max(0, allocator.included[jar.id] ? (allocator.percents[jar.id] ?? 0) : 0))}%`,
+                backgroundColor: jarStitch(jar.color)
+              }"
+            />
+          </div>
         </div>
       </div>
 
-      <template #footer>
-        <div class="flex items-center justify-between flex-wrap gap-2">
-          <span :class="allocator.isValid.value ? 'text-muted' : 'text-error'">Сумма: {{ allocator.total.value }}%</span>
-          <UButton
-            :disabled="!allocator.isValid.value"
-            @click="saveReallocation"
-          >
-            Сохранить распределение
-          </UButton>
-        </div>
-      </template>
-    </UCard>
+      <p
+        class="text-sm"
+        :class="allocator.isValid.value ? 'text-muted' : 'text-error'"
+      >
+        Сумма: {{ allocator.total.value }}% — всегда должна быть 100%
+      </p>
+    </section>
 
     <UModal
       v-model:open="isTransferOpen"

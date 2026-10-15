@@ -2,7 +2,20 @@
 @import "@nuxt/ui";
 
 @theme static {
-  --font-sans: 'Golos Text', sans-serif;
+  --font-sans: 'Onest', sans-serif;
+
+  /* Navy: the single quiet accent */
+  --color-navy-50: #eef2fb;
+  --color-navy-100: #d6def2;
+  --color-navy-200: #b0c0e6;
+  --color-navy-300: #8ea2d6;
+  --color-navy-400: #27407a;
+  --color-navy-500: #3b5aa8;
+  --color-navy-600: #2f4c92;
+  --color-navy-700: #27407a;
+  --color-navy-800: #1f3566;
+  --color-navy-900: #1a2d57;
+  --color-navy-950: #101c3a;
 
   /* Ink: cool blue-black neutrals for the classic premium dark fintech look */
   --color-ink-50: #f4f5f8;
@@ -42,22 +55,66 @@ html {
   background: color-mix(in oklab, var(--ui-primary) 40%, transparent);
 }
 
-/* Thin progress bar used on jar tiles. */
-.jar-track {
-  height: 4px;
-  border-radius: 2px;
-  background: var(--ui-border);
+/* Felt rug: the jar tile. --rug-c is the fabric, --rug-a the stitched zig-zag (see utils/jarColor.ts). */
+.rug {
+  --rug-c: #2c4a8a;
+  --rug-a: #9db0d8;
+  position: relative;
   overflow: hidden;
+  border-radius: 10px;
+  background: var(--rug-c);
+  color: #e6e8ee;
+  padding: 12px 14px;
 }
-.jar-track > span {
-  display: block;
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+.rug::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 30px;
+  opacity: 0.9;
+  background:
+    linear-gradient(135deg, transparent 45%, var(--rug-a) 45% 55%, transparent 55%) 0 0 / 24px 30px,
+    linear-gradient(225deg, transparent 45%, var(--rug-a) 45% 55%, transparent 55%) 0 0 / 24px 30px;
 }
-@media (prefers-reduced-motion: reduce) {
-  .jar-track > span { transition: none; }
+.rug::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: 5px;
+  border: 2px dashed rgb(230 232 238 / 0.25);
+  border-radius: 8px;
+  pointer-events: none;
 }
+.rug > *:not(.absolute) { position: relative; z-index: 1; }
+.rug--compact::before { height: 14px; }
+/* Leaves room above the stitched edge for content such as action buttons. */
+.rug--padded { padding-bottom: 42px; }
+.rug--chip {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.rug--chip::before { height: 8px; }
+.rug--chip::after { margin: 3px; border-radius: 5px; }
+
+/* Header ornament: a short strip of felt stripes under the headline amount. */
+.orn {
+  height: 10px;
+  width: 150px;
+  background: repeating-linear-gradient(
+    90deg,
+    #b8362b 0 10px, #8ea2d6 10px 14px, #2c4a8a 14px 24px, #8ea2d6 24px 28px
+  );
+}
+
+/* Quiet navy accent: fills use the navy primary, text accents use a soft blue that stays readable. */
+.dark .bg-primary.text-inverted { color: #e6e8ee; }
+.dark .text-primary { color: #9db0d8; }
+.dark :focus-visible { outline-color: #5b78c8; }
 
 /* Onboarding tour (driver.js) — themed to match Nuxt UI tokens, see useOnboardingTour composable.
    Selector is compound (.driver-popover.mm-tour-popover) so it always outranks driver.css's own

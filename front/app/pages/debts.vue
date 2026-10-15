@@ -78,6 +78,14 @@ const statusLabels: Record<Debt['status'], string> = {
   REPAID: 'Закрыт',
   FORGIVEN: 'Прощён'
 }
+
+// Fabric colour of a debt card by status (stitching is derived from it, see utils/jarColor.ts).
+const DEBT_RUG: Record<string, string> = {
+  ACTIVE: '#6366f1',
+  PARTIALLY_REPAID: '#14b8a6',
+  REPAID: '#10b981',
+  FORGIVEN: '#94a3b8'
+}
 const statusColors: Record<Debt['status'], 'warning' | 'info' | 'success' | 'neutral'> = {
   ACTIVE: 'warning',
   PARTIALLY_REPAID: 'info',
@@ -257,74 +265,77 @@ onMounted(async () => {
 
     <div
       v-if="filteredDebts.length"
-      class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+      class="grid grid-cols-1 gap-3 lg:grid-cols-2"
     >
-      <UCard
+      <div
         v-for="debt in filteredDebts"
         :key="debt.id"
+        class="rug rug--padded"
+        :style="jarRugStyle(DEBT_RUG[debt.status])"
       >
         <div
           class="cursor-pointer"
           @click="detailsDebt = debt"
         >
-          <div class="flex items-start justify-between gap-2">
+          <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
-              <h3 class="font-medium">
+              <h3 class="truncate text-[15px] font-extrabold">
                 {{ debt.person.name }}
               </h3>
               <p
                 v-if="debt.description"
-                class="text-sm text-muted truncate"
+                class="truncate text-xs opacity-80"
               >
                 {{ debt.description }}
               </p>
               <p
                 v-if="debt.sourceJar"
-                class="text-xs text-muted flex items-center gap-1 mt-0.5"
+                class="mt-0.5 flex items-center gap-1 text-xs opacity-80"
               >
-                <UIcon name="i-lucide-vault" class="size-3" />
+                <UIcon
+                  name="i-lucide-vault"
+                  class="size-3"
+                />
                 вернётся в «{{ debt.sourceJar.name }}»
               </p>
+              <p class="mt-1 text-xs opacity-80">
+                {{ statusLabels[debt.status] }}
+              </p>
             </div>
-            <UBadge
-              :color="statusColors[debt.status]"
-              variant="subtle"
-            >
-              {{ statusLabels[debt.status] }}
-            </UBadge>
+            <div class="shrink-0 text-right">
+              <p class="text-[22px] font-extrabold tabular-nums">
+                {{ formatMoney(remaining(debt)) }}
+              </p>
+              <p
+                v-if="remaining(debt) !== Number(debt.amount)"
+                class="text-xs opacity-80"
+              >
+                из {{ formatMoney(debt.amount) }}
+              </p>
+            </div>
           </div>
-
-          <p class="text-2xl font-semibold mt-2 tabular-nums">
-            {{ formatMoney(remaining(debt)) }}
-          </p>
-          <p
-            v-if="remaining(debt) !== Number(debt.amount)"
-            class="text-sm text-muted"
-          >
-            из {{ formatMoney(debt.amount) }}
-          </p>
         </div>
 
         <div
           v-if="debt.status === 'ACTIVE' || debt.status === 'PARTIALLY_REPAID'"
-          class="flex gap-2 mt-3"
+          class="mt-3 flex gap-2"
         >
-          <UButton
-            size="sm"
+          <button
+            type="button"
+            class="rounded-lg bg-black/35 px-3 py-1.5 text-sm font-semibold text-white hover:bg-black/50"
             @click.stop="repayingDebt = debt"
           >
             {{ debt.type === 'OWED_TO_ME' ? 'Вернули' : 'Погасить' }}
-          </UButton>
-          <UButton
-            size="sm"
-            color="neutral"
-            variant="subtle"
+          </button>
+          <button
+            type="button"
+            class="rounded-lg bg-white/15 px-3 py-1.5 text-sm font-semibold text-white hover:bg-white/25"
             @click.stop="forgivingDebt = debt"
           >
             Простить
-          </UButton>
+          </button>
         </div>
-      </UCard>
+      </div>
     </div>
     <p
       v-else

@@ -32,6 +32,18 @@ const TYPE_META: Record<string, TypeMeta> = {
   DEBT_REPAY: { label: 'Погашение долга', icon: 'i-lucide-badge-check', badgeClass: 'bg-teal-500/15 text-teal-400' },
   DEBT_FORGIVE: { label: 'Прощённый долг', icon: 'i-lucide-heart-handshake', badgeClass: 'bg-violet-500/15 text-violet-400' }
 }
+const TYPE_COLOR: Record<string, string> = {
+  INCOME_CREATE: '#10b981',
+  EXPENSE_CREATE: '#f43f5e',
+  EXPENSE_UPDATE: '#f59e0b',
+  EXPENSE_DELETE: '#94a3b8',
+  TRANSFER_CREATE: '#0ea5e9',
+  DEBT_CREATE: '#6366f1',
+  DEBT_CREATE_BULK: '#6366f1',
+  DEBT_REPAY: '#14b8a6',
+  DEBT_FORGIVE: '#8b5cf6'
+}
+
 const DEFAULT_META: TypeMeta = { label: 'Действие', icon: 'i-lucide-circle', badgeClass: 'bg-neutral-500/15 text-neutral-400' }
 
 function metaFor(type: string) {
@@ -196,16 +208,16 @@ onMounted(async () => {
       <div
         v-for="action in actions"
         :key="action.id"
-        class="flex items-center gap-3 rounded-lg border border-default px-4 py-3"
+        class="flex items-center gap-3 rounded-[10px] border border-default bg-elevated px-3 py-2.5"
         :class="{ 'opacity-50': action.undone }"
       >
         <div
-          class="flex size-8 items-center justify-center rounded-full shrink-0"
-          :class="metaFor(action.type).badgeClass"
+          class="rug rug--chip"
+          :style="jarRugStyle(TYPE_COLOR[action.type] ?? '#94a3b8')"
         >
           <UIcon
             :name="metaFor(action.type).icon"
-            class="size-4"
+            class="relative z-10 size-4"
           />
         </div>
         <div class="min-w-0 flex-1">

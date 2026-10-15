@@ -34,7 +34,7 @@ const tabs = [
           {{ tab.label }}
           <span
             class="h-0.5 w-6 rounded-full transition-colors"
-            :class="tab.match(route.path) ? 'bg-primary' : 'bg-transparent'"
+            :class="tab.match(route.path) ? 'bg-[#3b5aa8]' : 'bg-transparent'"
           />
         </NuxtLink>
       </li>
