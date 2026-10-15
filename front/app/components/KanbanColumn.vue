@@ -36,8 +36,8 @@ async function handleDragEnd(event: { item: HTMLElement, to: HTMLElement, newInd
       await api(`/board/expenses/${expenseId}`, { method: 'PATCH', body: { jarId: toJarId } })
     }
     emit('changed')
-  } catch {
-    toast.add({ title: 'Не удалось перенести расход', color: 'error' })
+  } catch (error: any) {
+    toast.add({ title: 'Не удалось перенести расход', description: error?.data?.message, color: 'error' })
     emit('changed')
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -21,6 +21,28 @@ export class LedgerService {
       where: { id: jarId },
       data: { balance: { increment: delta } },
     });
+  }
+
+  /**
+   * Debits a jar for a new operation, refusing if the balance is too low. The check is part of
+   * the UPDATE itself, so two concurrent debits cannot both pass. Undo paths deliberately keep
+   * using adjustJarBalance: rolling an action back must never fail on balance.
+   */
+  async debitJar(tx: Tx, userId: string, jarId: string, amount: Prisma.Decimal.Value) {
+    const value = new Prisma.Decimal(amount);
+    const result = await tx.jar.updateMany({
+      where: { id: jarId, userId, balance: { gte: value } },
+      data: { balance: { decrement: value } },
+    });
+    if (result.count === 0) {
+      const jar = await tx.jar.findFirst({ where: { id: jarId, userId } });
+      if (!jar) {
+        throw new NotFoundException(`Jar ${jarId} not found`);
+      }
+      throw new BadRequestException(
+        `Insufficient funds in «${jar.name}»: available ${jar.balance.toString()}, required ${value.toString()}`,
+      );
+    }
   }
 
   logAction(

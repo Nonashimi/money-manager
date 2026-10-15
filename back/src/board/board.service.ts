@@ -48,7 +48,7 @@ export class BoardService {
         data: { dayId: day.id, jarId: dto.jarId, amount, description: dto.description, order },
       });
 
-      await this.ledger.adjustJarBalance(tx, userId, dto.jarId, amount.negated());
+      await this.ledger.debitJar(tx, userId, dto.jarId, amount);
 
       await this.ledger.logAction(tx, userId, 'EXPENSE_CREATE', `Расход ${amount.toString()} в «${jar.name}»`, {
         expenseId: expense.id,
@@ -96,12 +96,18 @@ export class BoardService {
 
       if (!newAmount.equals(expense.amount) || newJarId !== expense.jarId) {
         await this.ledger.adjustJarBalance(tx, userId, expense.jarId, expense.amount);
-        await this.ledger.adjustJarBalance(tx, userId, newJarId, newAmount.negated());
+        await this.ledger.debitJar(tx, userId, newJarId, newAmount);
       }
 
       await this.ledger.logAction(tx, userId, 'EXPENSE_UPDATE', `Расход обновлён`, {
         expenseId,
-        previous: { jarId: expense.jarId, amount: expense.amount.toString() },
+        previous: {
+          jarId: expense.jarId,
+          amount: expense.amount.toString(),
+          dayId: expense.dayId,
+          description: expense.description,
+          order: expense.order,
+        },
         current: { jarId: newJarId, amount: newAmount.toString() },
       });
 

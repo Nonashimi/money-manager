@@ -176,7 +176,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     <div class="space-y-2">
       <div class="flex items-center justify-between">
         <p class="text-sm font-medium">
-          {{ type === 'OWED_TO_ME' ? 'Из каких копилок дали' : 'Из каких копилок планируете погасить' }}
+          {{ type === 'OWED_TO_ME' ? 'Из каких копилок дали' : 'В какие копилки зачислить' }}
         </p>
         <UButton size="xs" color="neutral" variant="ghost" :disabled="!totalAmount" @click="distributeEvenly">
           Поровну

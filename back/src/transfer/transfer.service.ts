@@ -49,7 +49,7 @@ export class TransferService {
         }
       }
 
-      await this.ledger.adjustJarBalance(tx, userId, dto.fromJarId, amount.negated());
+      await this.ledger.debitJar(tx, userId, dto.fromJarId, amount);
       await this.ledger.adjustJarBalance(tx, userId, dto.toJarId, amount);
 
       const transfer = await tx.transfer.create({

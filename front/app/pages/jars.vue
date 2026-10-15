@@ -24,13 +24,23 @@ async function handleCreate(payload: { name: string, color?: string, type?: 'SPE
 
 async function handleUpdate(payload: { name: string, color?: string, type?: 'SPENDING' | 'SAVINGS', defaultPercent?: number }) {
   if (!editingJar.value) return
-  await jarsStore.updateJar(editingJar.value.id, payload)
+  try {
+    await jarsStore.updateJar(editingJar.value.id, payload)
+  } catch (error: any) {
+    toast.add({ title: 'Не удалось обновить копилку', description: error?.data?.message, color: 'error' })
+    return
+  }
   editingJar.value = null
   toast.add({ title: 'Копилка обновлена', color: 'success' })
 }
 
 async function handleArchive(jar: Jar) {
-  await jarsStore.archiveJar(jar.id)
+  try {
+    await jarsStore.archiveJar(jar.id)
+  } catch (error: any) {
+    toast.add({ title: 'Не удалось архивировать копилку', description: error?.data?.message, color: 'error' })
+    return
+  }
   toast.add({ title: `«${jar.name}» архивирована`, color: 'neutral' })
 }
 

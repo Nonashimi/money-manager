@@ -64,9 +64,14 @@ export class DebtService {
         include: { allocations: true, person: true },
       });
 
-      if (dto.type === DebtType.OWED_TO_ME) {
-        for (const a of dto.allocations) {
-          await this.ledger.adjustJarBalance(tx, userId, a.jarId, new Prisma.Decimal(a.amount).negated());
+      // OWED_TO_ME: money leaves the jars now. I_OWE: borrowed money lands in the chosen jars now
+      // and is taken back from jars on repayment.
+      for (const a of dto.allocations) {
+        const value = new Prisma.Decimal(a.amount);
+        if (dto.type === DebtType.OWED_TO_ME) {
+          await this.ledger.debitJar(tx, userId, a.jarId, value);
+        } else {
+          await this.ledger.adjustJarBalance(tx, userId, a.jarId, value);
         }
       }
 
@@ -74,10 +79,13 @@ export class DebtService {
       const summary =
         dto.type === DebtType.OWED_TO_ME
           ? `Дали в долг ${formatAmount(amount)} (${person.name}) — списано из: ${breakdown}`
-          : `Взяли в долг ${formatAmount(amount)} (${person.name}) — план погашения из: ${breakdown}`;
+          : `Взяли в долг ${formatAmount(amount)} (${person.name}) — зачислено в: ${breakdown}`;
       await this.ledger.logAction(tx, userId, 'DEBT_CREATE', summary, {
         debtId: debt.id,
         type: dto.type,
+        // Marks records written after I_OWE started crediting jars on creation; undo relies on it
+        // so that older I_OWE records (balance was never touched) are not rolled back.
+        credited: true,
         allocations: dto.allocations.map((a) => ({ jarId: a.jarId, amount: a.amount })),
       });
 
@@ -156,7 +164,7 @@ export class DebtService {
       }
 
       for (const a of dto.allocations) {
-        await this.ledger.adjustJarBalance(tx, userId, a.jarId, new Prisma.Decimal(a.amount).negated());
+        await this.ledger.debitJar(tx, userId, a.jarId, a.amount);
       }
 
       const jarWeights = dto.allocations.map((a) => ({ jarId: a.jarId, amount: new Prisma.Decimal(a.amount) }));
@@ -258,8 +266,11 @@ export class DebtService {
       }
 
       for (const a of allocations) {
-        const delta = debt.type === DebtType.OWED_TO_ME ? a.amount : a.amount.negated();
-        await this.ledger.adjustJarBalance(tx, userId, a.jarId, delta);
+        if (debt.type === DebtType.OWED_TO_ME) {
+          await this.ledger.adjustJarBalance(tx, userId, a.jarId, a.amount);
+        } else {
+          await this.ledger.debitJar(tx, userId, a.jarId, a.amount);
+        }
       }
 
       let sourceJar: { id: string; name: string } | null = null;

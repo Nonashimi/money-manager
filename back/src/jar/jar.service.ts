@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { DebtStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateJarDto } from './dto/create-jar.dto';
 import { ReallocateJarsDto } from './dto/reallocate-jars.dto';
@@ -47,7 +47,23 @@ export class JarService {
   }
 
   async update(userId: string, jarId: string, dto: UpdateJarDto) {
-    await this.findOneOrThrow(userId, jarId);
+    const existing = await this.findOneOrThrow(userId, jarId);
+
+    if (existing.archived) {
+      throw new BadRequestException('Archived jar cannot be modified');
+    }
+
+    if (dto.type !== undefined && dto.type !== existing.type) {
+      const [expenses, debtAllocations, repaymentAllocations, sourceDebts] = await Promise.all([
+        this.prisma.expense.count({ where: { jarId } }),
+        this.prisma.debtAllocation.count({ where: { jarId } }),
+        this.prisma.debtRepaymentAllocation.count({ where: { jarId } }),
+        this.prisma.debt.count({ where: { sourceJarId: jarId } }),
+      ]);
+      if (expenses + debtAllocations + repaymentAllocations + sourceDebts > 0) {
+        throw new BadRequestException('Jar type cannot be changed: the jar already has expenses or debts');
+      }
+    }
 
     return this.prisma.$transaction(async (tx) => {
       const { defaultPercent, ...rest } = dto;
@@ -63,7 +79,26 @@ export class JarService {
   }
 
   async archive(userId: string, jarId: string) {
-    await this.findOneOrThrow(userId, jarId);
+    const existing = await this.findOneOrThrow(userId, jarId);
+    if (existing.archived) {
+      throw new BadRequestException('Jar is already archived');
+    }
+    if (!existing.balance.isZero()) {
+      throw new BadRequestException('Jar has a non-zero balance: transfer the money to another jar before archiving');
+    }
+
+    const openStatuses = [DebtStatus.ACTIVE, DebtStatus.PARTIALLY_REPAID];
+    const openDebts = await this.prisma.debt.count({
+      where: {
+        userId,
+        status: { in: openStatuses },
+        OR: [{ sourceJarId: jarId }, { allocations: { some: { jarId } } }],
+      },
+    });
+    if (openDebts > 0) {
+      throw new BadRequestException('Jar is used by unpaid debts: repay or forgive them before archiving');
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const jar = await tx.jar.update({ where: { id: jarId }, data: { archived: true } });
       await this.rebalanceOthers(tx, userId, jarId, ZERO, true);

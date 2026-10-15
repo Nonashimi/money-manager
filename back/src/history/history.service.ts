@@ -118,7 +118,14 @@ export class HistoryService {
 
   private async undoExpenseUpdate(tx: Tx, userId: string, payload: Record<string, unknown>) {
     const expenseId = payload.expenseId as string;
-    const previous = payload.previous as { jarId: string; amount: string };
+    // dayId/description/order are absent in records written before they were captured.
+    const previous = payload.previous as {
+      jarId: string;
+      amount: string;
+      dayId?: string;
+      description?: string;
+      order?: number;
+    };
     const current = payload.current as { jarId: string; amount: string };
 
     await this.ledger.adjustJarBalance(tx, userId, current.jarId, new Prisma.Decimal(current.amount));
@@ -126,7 +133,13 @@ export class HistoryService {
 
     await tx.expense.update({
       where: { id: expenseId },
-      data: { jarId: previous.jarId, amount: new Prisma.Decimal(previous.amount) },
+      data: {
+        jarId: previous.jarId,
+        amount: new Prisma.Decimal(previous.amount),
+        ...(previous.dayId !== undefined ? { dayId: previous.dayId } : {}),
+        ...(previous.description !== undefined ? { description: previous.description } : {}),
+        ...(previous.order !== undefined ? { order: previous.order } : {}),
+      },
     });
   }
 
@@ -159,9 +172,14 @@ export class HistoryService {
     const type = payload.type as DebtType;
     const allocations = payload.allocations as JarAmountEntry[];
 
-    if (type === DebtType.OWED_TO_ME) {
+    // I_OWE records created before jars were credited on creation have no `credited` flag:
+    // their balance was never touched, so undo must only delete the debt.
+    const touchedBalance = type === DebtType.OWED_TO_ME || payload.credited === true;
+
+    if (touchedBalance) {
       for (const a of allocations) {
-        await this.ledger.adjustJarBalance(tx, userId, a.jarId, new Prisma.Decimal(a.amount));
+        const value = new Prisma.Decimal(a.amount);
+        await this.ledger.adjustJarBalance(tx, userId, a.jarId, type === DebtType.OWED_TO_ME ? value : value.negated());
       }
     }
     await tx.debt.delete({ where: { id: debtId } });
