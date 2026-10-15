@@ -87,80 +87,76 @@ const accentColor = computed(() => props.jar.color || '#6366f1')
 </script>
 
 <template>
-  <UCard
+  <div
     data-tour="board-column"
-    class="w-[85vw] max-w-sm shrink-0 sm:w-auto sm:max-w-none sm:min-w-64 sm:flex-1 sm:shrink"
+    class="flex min-h-48 flex-col gap-3 rounded-xl border border-default bg-elevated p-3"
   >
-    <template #header>
-      <div class="flex items-center justify-between gap-2">
-        <span class="flex items-center gap-2 font-medium truncate">
-          <span
-            class="size-2 rounded-full shrink-0"
-            :style="{ backgroundColor: accentColor }"
-          />
-          {{ jar.name }}
-        </span>
+    <div class="flex items-center justify-between gap-2 px-1">
+      <span class="flex min-w-0 items-center gap-2 font-semibold text-highlighted">
         <span
-          class="text-sm font-medium shrink-0 tabular-nums"
-          :class="isNegative ? 'text-error' : 'text-highlighted'"
-        >
-          {{ formatMoney(jar.balance) }}
-        </span>
-      </div>
-      <div class="flex items-center justify-between gap-2 mt-1 text-xs text-muted">
-        <span>Остаток в копилке</span>
-        <span class="tabular-nums">за день: {{ formatMoney(columnTotal) }}</span>
-      </div>
-    </template>
+          class="size-2.5 shrink-0 rounded-full"
+          :style="{ backgroundColor: accentColor }"
+        />
+        <span class="truncate">{{ jar.name }}</span>
+      </span>
+      <span
+        class="shrink-0 text-sm font-medium tabular-nums"
+        :class="isNegative ? 'text-error' : 'text-muted'"
+      >
+        {{ formatMoney(jar.balance) }}
+      </span>
+    </div>
+    <p class="-mt-2 px-1 text-xs text-dimmed tabular-nums">
+      за день: {{ formatMoney(columnTotal) }}
+    </p>
 
     <div
       ref="columnEl"
       :data-jar-id="jar.id"
-      class="space-y-2 min-h-16"
+      class="min-h-12 flex-1 space-y-2"
     >
       <div
         v-for="card in localCards"
         :key="card.id"
         :data-expense-id="card.id"
         data-tour="board-card"
-        class="group flex items-start gap-2 rounded-lg border border-default bg-elevated/50 px-3 py-2 cursor-grab active:cursor-grabbing hover:border-primary/40 transition-colors"
+        class="group flex cursor-grab items-center gap-2 rounded-lg border border-default bg-accented px-3 py-2.5 transition-colors hover:border-primary/50 active:cursor-grabbing"
       >
         <UIcon
           name="i-lucide-grip-vertical"
-          class="size-4 text-dimmed mt-0.5 shrink-0"
+          class="size-4 shrink-0 text-dimmed"
         />
         <div class="min-w-0 flex-1">
-          <p class="font-medium tabular-nums">
-            {{ formatMoney(card.amount) }}
-          </p>
-          <p class="text-sm text-muted truncate">
-            {{ card.description }}
+          <p class="truncate text-sm text-default">
+            {{ card.description || 'Без описания' }}
           </p>
         </div>
+        <p class="shrink-0 font-semibold tabular-nums text-highlighted">
+          {{ formatMoney(card.amount) }}
+        </p>
         <UButton
           icon="i-lucide-x"
           size="xs"
           color="neutral"
           variant="ghost"
-          class="opacity-60 hover:opacity-100 transition-opacity"
+          aria-label="Удалить расход"
+          class="opacity-60 transition-opacity hover:opacity-100"
           @click="removeCard(card.id)"
         />
       </div>
     </div>
 
-    <template #footer>
-      <UButton
-        data-tour="board-add-btn"
-        icon="i-lucide-plus"
-        size="sm"
-        color="neutral"
-        variant="ghost"
-        block
-        @click="isAddOpen = true"
-      >
-        Добавить
-      </UButton>
-    </template>
+    <UButton
+      data-tour="board-add-btn"
+      icon="i-lucide-plus"
+      size="sm"
+      color="primary"
+      variant="ghost"
+      block
+      @click="isAddOpen = true"
+    >
+      Добавить
+    </UButton>
 
     <UModal
       v-model:open="isAddOpen"
@@ -191,5 +187,5 @@ const accentColor = computed(() => props.jar.color || '#6366f1')
         </div>
       </template>
     </UModal>
-  </UCard>
+  </div>
 </template>

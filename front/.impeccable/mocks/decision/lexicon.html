@@ -1,0 +1,39 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600;7..72,800&family=Golos+Text:wght@500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:390px;height:844px;overflow:hidden;background:#121110;color:#e9e2d0;font:400 15px/1.4 'Literata',serif;position:relative}
+.head{margin:0 20px;padding:18px 0 8px;border-bottom:2px solid #e9e2d0;display:flex;justify-content:space-between;font:500 12px 'Golos Text';letter-spacing:.14em;text-transform:uppercase}
+.head i{font-style:normal;color:#8f8878}
+.tot{margin:0 20px;padding:14px 0 12px;border-bottom:1px solid #3a3730}
+.tot small{font:500 12px 'Golos Text';letter-spacing:.14em;text-transform:uppercase;color:#8f8878}
+.tot b{display:block;font:800 52px/1.05 'Literata';letter-spacing:-.02em;font-variant-numeric:tabular-nums lining-nums;margin-top:4px}
+.tot b span{font-weight:400;color:#8f8878;font-size:30px}
+.entry{margin:0 20px 0 36px;padding:12px 0;border-bottom:1px solid #3a3730;display:grid;grid-template-columns:1fr auto;gap:2px 12px;position:relative}
+.entry::before{content:attr(data-l);position:absolute;left:-26px;top:12px;font:600 13px 'Golos Text';color:#8f8878}
+.entry h3{font:800 17px 'Literata';letter-spacing:-.01em}
+.entry h3 em{font:400 italic 13px 'Literata';color:#8f8878;margin-left:6px}
+.entry .v{font:600 20px 'Literata';font-variant-numeric:tabular-nums lining-nums;text-align:right}
+.entry p{grid-column:1/2;font-size:13px;color:#a9a290}
+.plate{grid-column:2/3;grid-row:2/3;justify-self:end;width:86px;height:22px;border:1px solid #e9e2d0;padding:2px;background:#121110}
+.plate i{display:block;height:100%;background:var(--c)}
+.foot{margin:14px 20px 0;padding:12px 0 0;border-top:2px solid #e9e2d0;display:flex;justify-content:space-between;align-items:baseline}
+.foot small{font:500 12px 'Golos Text';letter-spacing:.14em;text-transform:uppercase;color:#8f8878}
+.foot b{font:800 24px 'Literata';font-variant-numeric:lining-nums}
+.shoulder{position:absolute;right:6px;top:120px;font:500 10px 'Golos Text';color:#8f8878;display:flex;flex-direction:column;gap:12px}
+.shoulder .on{color:#e9e2d0;text-decoration:line-through}
+.nav{position:absolute;bottom:0;left:0;right:0;height:72px;border-top:1px solid #3a3730;background:#0e0d0c;display:flex;justify-content:space-around;align-items:center;font:500 12px 'Golos Text';color:#8f8878;letter-spacing:.06em}
+.nav .on{color:#e9e2d0;border-bottom:2px solid #d9482b;padding-bottom:6px}
+.add{position:absolute;right:18px;bottom:86px;border:1.5px solid #e9e2d0;background:#121110;color:#e9e2d0;font:600 14px 'Golos Text';padding:12px 18px}
+</style></head><body>
+<div class="head"><span>Еда — Транспорт</span><i>↺ отменить</i></div>
+<div class="tot"><small>Доступно к тратам</small><b>184 500<span> ₸</span></b></div>
+<div class="entry" data-l="А"><h3>Еда<em>20%</em></h3><div class="v">79 100</div><p>−3 100 сегодня</p><div class="plate"><i style="--c:#2f9e7a;width:88%"></i></div></div>
+<div class="entry" data-l="Н"><h3>Нужды<em>55%</em></h3><div class="v">62 400</div><p>−12 800 за неделю</p><div class="plate"><i style="--c:#3d5bd9;width:72%"></i></div></div>
+<div class="entry" data-l="Р"><h3>Развлечения<em>15%</em></h3><div class="v">18 900</div><p>лимит близко</p><div class="plate"><i style="--c:#d9482b;width:24%"></i></div></div>
+<div class="entry" data-l="Т"><h3>Транспорт<em>10%</em></h3><div class="v">24 100</div><p>+8 000 вчера</p><div class="plate"><i style="--c:#e8b730;width:58%"></i></div></div>
+<div class="foot"><small>Накоплено · подушка</small><b>405 000 ₸</b></div>
+<div class="shoulder"><span>А</span><span class="on">Н</span><span>Р</span><span>Т</span></div>
+<div class="add">+ Расход</div>
+<div class="nav"><span class="on">Копилки</span><span>Доска</span><span>Долги</span><span>История</span></div>
+</body></html>

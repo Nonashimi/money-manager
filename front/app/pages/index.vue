@@ -84,6 +84,13 @@ const totalSavings = computed(() =>
   jarsStore.savingsJars.reduce((sum, jar) => sum + Number(jar.balance), 0)
 )
 
+const maxSpendingBalance = computed(() =>
+  Math.max(1, ...jarsStore.spendingJars.map(jar => Number(jar.balance)))
+)
+const maxSavingsBalance = computed(() =>
+  Math.max(1, ...jarsStore.savingsJars.map(jar => Number(jar.balance)))
+)
+
 const isIncomeOpen = ref(false)
 const toast = useToast()
 
@@ -96,23 +103,19 @@ const greetingName = computed(() => authStore.user?.name || authStore.user?.emai
 </script>
 
 <template>
-  <UContainer class="py-8 space-y-8">
-    <p class="text-muted">
-      С возвращением, {{ greetingName }}
-    </p>
-
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div
+  <UContainer class="py-6 sm:py-8 space-y-6">
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <section
         data-tour="total-spendable"
-        class="relative overflow-hidden rounded-2xl border border-default bg-gradient-to-br from-primary/15 via-elevated to-elevated px-6 py-8 sm:col-span-2 sm:px-8"
+        class="rounded-xl border border-default bg-gradient-to-br from-elevated to-muted p-5 sm:p-6 lg:col-span-2"
       >
         <p class="text-sm text-muted">
           Доступно к тратам
         </p>
-        <p class="mt-2 text-4xl font-semibold tabular-nums sm:text-5xl">
+        <p class="mt-1 text-4xl font-bold tracking-tight text-highlighted tabular-nums sm:text-5xl">
           {{ formatMoney(totalSpendable) }}
         </p>
-        <div class="mt-6 flex flex-wrap gap-2">
+        <div class="mt-5 flex flex-wrap gap-2">
           <UButton
             data-tour="add-income-btn"
             icon="i-lucide-plus"
@@ -131,11 +134,11 @@ const greetingName = computed(() => authStore.user?.name || authStore.user?.emai
             Управление копилками
           </UButton>
         </div>
-      </div>
+      </section>
 
-      <div
+      <section
         data-tour="total-savings"
-        class="rounded-2xl border border-default bg-elevated/50 px-6 py-8"
+        class="rounded-xl border border-default bg-elevated p-5 sm:p-6"
       >
         <p class="flex items-center gap-1.5 text-sm text-muted">
           <UIcon
@@ -144,13 +147,13 @@ const greetingName = computed(() => authStore.user?.name || authStore.user?.emai
           />
           Накоплено
         </p>
-        <p class="mt-2 text-3xl font-semibold tabular-nums">
+        <p class="mt-1 text-2xl font-bold tabular-nums text-highlighted">
           {{ formatMoney(totalSavings) }}
         </p>
         <p class="mt-1 text-xs text-muted">
           Не входит в сумму к тратам
         </p>
-      </div>
+      </section>
     </div>
 
     <div
@@ -158,14 +161,15 @@ const greetingName = computed(() => authStore.user?.name || authStore.user?.emai
       data-tour="jar-cards"
       class="space-y-3"
     >
-      <h2 class="text-lg font-medium">
+      <h2 class="text-sm font-medium text-muted">
         Расходные копилки
       </h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <JarCard
           v-for="jar in jarsStore.spendingJars"
           :key="jar.id"
           :jar="jar"
+          :fill="Number(jar.balance) / maxSpendingBalance"
           @edit="navigateTo('/jars')"
           @archive="handleArchive"
         />
@@ -176,14 +180,15 @@ const greetingName = computed(() => authStore.user?.name || authStore.user?.emai
       v-if="jarsStore.savingsJars.length"
       class="space-y-3"
     >
-      <h2 class="text-lg font-medium">
+      <h2 class="text-sm font-medium text-muted">
         Накопительные копилки
       </h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <JarCard
           v-for="jar in jarsStore.savingsJars"
           :key="jar.id"
           :jar="jar"
+          :fill="Number(jar.balance) / maxSavingsBalance"
           @edit="navigateTo('/jars')"
           @archive="handleArchive"
         />

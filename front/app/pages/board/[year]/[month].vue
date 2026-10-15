@@ -44,18 +44,24 @@ const selectedDay = ref(dayFromQuery > 0 && dayFromQuery <= daysInMonth.value ? 
 
 const selectedDate = computed(() => toISODate(year.value, month.value, selectedDay.value))
 
-const board = ref<BoardResponse | null>(null)
-
-async function loadBoard() {
-  board.value = await api<BoardResponse>('/board', { query: { year: year.value, month: month.value } })
-}
+// `board` must come from useAsyncData's own `data`: a plain ref filled inside the handler is not
+// part of the SSR payload, so after a full page load the client skipped the fetch and the board
+// stayed empty.
+const { data: board, refresh: refreshBoard } = await useAsyncData(
+  `board-${year.value}-${month.value}`,
+  async () => {
+    const [boardResponse] = await Promise.all([
+      api<BoardResponse>('/board', { query: { year: year.value, month: month.value } }),
+      jarsStore.fetchJars()
+    ])
+    return boardResponse
+  }
+)
 
 async function refreshAll() {
-  await Promise.all([loadBoard(), jarsStore.fetchJars()])
+  await Promise.all([refreshBoard(), jarsStore.fetchJars()])
   return true
 }
-
-await useAsyncData(`board-${year.value}-${month.value}`, refreshAll)
 
 const selectedDayData = computed(() => board.value?.days.find(d => d.date.slice(0, 10) === selectedDate.value))
 
@@ -159,7 +165,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UContainer class="py-8 space-y-6">
+  <UContainer class="py-6 space-y-5 sm:py-8">
     <div class="flex items-center justify-between flex-wrap gap-2">
       <h1 class="text-2xl font-semibold capitalize">
         {{ monthLabel }}
@@ -199,15 +205,15 @@ onMounted(async () => {
 
     <div
       data-tour="board-days"
-      class="flex gap-1 overflow-x-auto pb-2"
+      class="flex gap-2 overflow-x-auto pb-1"
     >
       <UButton
         v-for="day in daysInMonth"
         :key="day"
         :color="day === selectedDay ? 'primary' : 'neutral'"
-        :variant="day === selectedDay ? 'solid' : 'ghost'"
+        :variant="day === selectedDay ? 'solid' : 'subtle'"
         size="sm"
-        class="shrink-0"
+        class="min-w-10 shrink-0 justify-center"
         @click="selectedDay = day"
       >
         {{ day }}
@@ -216,24 +222,24 @@ onMounted(async () => {
 
     <div
       v-if="jarsStore.spendingJars.length"
-      class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+      class="grid grid-cols-2 gap-3"
     >
-      <div class="rounded-2xl border border-default bg-elevated/50 px-5 py-4">
+      <div class="rounded-xl border border-default bg-elevated px-4 py-3">
         <p class="text-sm text-muted">
           Всего доступно к тратам
         </p>
         <p
-          class="mt-1 text-2xl font-semibold tabular-nums"
+          class="mt-1 text-xl font-bold tabular-nums sm:text-2xl"
           :class="totalAvailable < 0 ? 'text-error' : ''"
         >
           {{ formatMoney(totalAvailable) }}
         </p>
       </div>
-      <div class="rounded-2xl border border-default bg-elevated/50 px-5 py-4">
+      <div class="rounded-xl border border-default bg-elevated px-4 py-3">
         <p class="text-sm text-muted">
           Потрачено в этот день
         </p>
-        <p class="mt-1 text-2xl font-semibold tabular-nums">
+        <p class="mt-1 text-xl font-bold tabular-nums sm:text-2xl">
           {{ formatMoney(daySpent) }}
         </p>
       </div>
@@ -251,7 +257,7 @@ onMounted(async () => {
 
     <div
       v-else
-      class="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory sm:snap-none -mx-4 px-4 sm:mx-0 sm:px-0"
+      class="grid grid-cols-1 items-start gap-3 md:grid-cols-2 xl:grid-cols-4"
     >
       <KanbanColumn
         v-for="jar in jarsStore.spendingJars"
@@ -259,7 +265,6 @@ onMounted(async () => {
         :jar="jar"
         :cards="columnsData[jar.id] ?? []"
         :date="selectedDate"
-        class="snap-start"
         @changed="refreshAll"
       />
     </div>

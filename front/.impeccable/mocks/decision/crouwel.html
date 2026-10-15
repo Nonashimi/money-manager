@@ -1,0 +1,35 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;700;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:390px;height:844px;overflow:hidden;background:#0b1020;color:#e8ecff;font:400 14px 'Golos Text',sans-serif;position:relative;
+ background-image:linear-gradient(#1a2347 1px,transparent 1px),linear-gradient(90deg,#1a2347 1px,transparent 1px);background-size:30px 30px;background-position:0 0}
+.top{padding:18px 30px 0;display:flex;justify-content:space-between;font:500 11px 'JetBrains Mono';color:#7b88c8;text-transform:uppercase;letter-spacing:.08em}
+.big{padding:10px 30px 0}.big small{font:500 11px 'JetBrains Mono';color:#7b88c8;text-transform:uppercase;letter-spacing:.08em}
+.big b{display:block;font:900 78px/.95 'Golos Text';letter-spacing:-.04em;color:#e8ecff;margin-top:6px}
+.big b em{font-style:normal;color:#2d3bff;background:#e8ecff;padding:0 6px;margin-left:-6px}
+.cells{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:22px 30px 0;border:1px solid #2d3bff}
+.c{aspect-ratio:1;border:1px solid #2d3bff;padding:8px;display:flex;flex-direction:column;justify-content:space-between;background:#0b1020}
+.c.w{grid-column:span 2;aspect-ratio:2/1}
+.c.a{background:#2d3bff}
+.c span{font:500 10px 'JetBrains Mono';text-transform:uppercase;letter-spacing:.06em;color:#9aa6e0}.c.a span{color:#dfe4ff}
+.c b{font:900 24px/1 'Golos Text';letter-spacing:-.03em}
+.c.w b{font-size:32px}
+.sav{margin:0 30px;padding:10px 8px;border:1px solid #2d3bff;border-top:0;display:flex;justify-content:space-between;font:500 11px 'JetBrains Mono';color:#7b88c8;text-transform:uppercase}
+.sav b{font:900 18px 'Golos Text';color:#e8ecff}
+.nav{position:absolute;bottom:0;left:0;right:0;height:70px;background:#0b1020;border-top:1px solid #2d3bff;display:grid;grid-template-columns:repeat(4,1fr);text-align:center;font:500 11px/70px 'JetBrains Mono';text-transform:uppercase;color:#7b88c8}
+.nav .on{background:#2d3bff;color:#fff}
+.add{position:absolute;right:30px;bottom:86px;width:60px;height:60px;background:#e8ecff;color:#0b1020;font:900 36px/60px 'Golos Text';text-align:center;transform:rotate(0)}
+</style></head><body>
+<div class="top"><span>15.10.2026</span><span>↺ отмена</span></div>
+<div class="big"><small>Доступно к тратам</small><b>184<br><em>500</em> ₸</b></div>
+<div class="cells">
+<div class="c w a"><span>Нужды · 55%</span><b>62 400</b></div>
+<div class="c"><span>Еда</span><b>79 100</b></div>
+<div class="c"><span>Транспорт</span><b>24 100</b></div>
+<div class="c w"><span>Развлечения · 15%</span><b>18 900</b></div>
+</div>
+<div class="sav"><span>Накоплено · подушка</span><b>405 000</b></div>
+<div class="add">+</div>
+<div class="nav"><span class="on">Копилки</span><span>Доска</span><span>Долги</span><span>История</span></div>
+</body></html>

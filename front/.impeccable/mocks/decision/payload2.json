@@ -1,0 +1,214 @@
+{
+ "title": "Новый стиль для money-manager — вторая подборка",
+ "question": "Выпал «Глазурь Регистана». Оставить, выбрать другой или перебросить ещё раз.",
+ "options": [
+  {
+   "id": "registan-tile",
+   "kind": "assigned",
+   "label": "Глазурь Регистана",
+   "kicker": "THE ROLL",
+   "lineage": "самаркандская майолика и изразцы Регистана",
+   "thesis": "Копилки — глазурованные изразцы: кобальт, бирюза и золото, сумма вписана в орнаментальный картуш.",
+   "palette": [
+    "#0b1a33",
+    "#1b6fb0",
+    "#2bb3a8",
+    "#d8a73c",
+    "#f1ead6"
+   ],
+   "materials": [
+    "глазурь",
+    "золочёный контур",
+    "кафель"
+   ],
+   "viewport": "Тёмно-кобальтовый экран, итог в золочёном картуше, копилки — плитки с глазурованными рамками.",
+   "risk": "Орнамент легко превращается в декор, если рамки не держат строгую сетку.",
+   "raised": [
+    {
+     "from": "Transit diagram",
+     "raise": "Каждая копилка — линия своего цвета и несёт этот цвет всюду: плитки, графики, история."
+    },
+    {
+     "from": "Ticket wallet",
+     "raise": "Отменённые действия штампуются, а не исчезают: состояние «отменено» видно в истории."
+    }
+   ],
+   "html": ".impeccable/mocks/decision/registan.html",
+   "htmlFrame": "390x844"
+  },
+  {
+   "id": "felt-ornament",
+   "kind": "grounded",
+   "label": "Войлочный орнамент",
+   "kicker": "IMPECCABLE’S PICK",
+   "lineage": "казахские узорные войлочные ковры, сыр­мак и тускииз",
+   "thesis": "Копилки — полосы ковра: цвет и повторяющийся мотив рода тратящих денег, узор растёт с остатком.",
+   "palette": [
+    "#14110f",
+    "#b8362b",
+    "#2c4a8a",
+    "#e8c25a",
+    "#efe6d2"
+   ],
+   "materials": [
+    "войлок",
+    "аппликация",
+    "стёжка"
+   ],
+   "viewport": "Итог на тёмном войлоке, копилки как горизонтальные ковровые полосы с орнаментом по долям.",
+   "risk": "Этнический мотив — ответственность: нужно строго, без карикатуры.",
+   "html": ".impeccable/mocks/decision/felt.html",
+   "htmlFrame": "390x844"
+  },
+  {
+   "id": "challenger-transit",
+   "kind": "challenger",
+   "catalogId": "wayfinding-cartography-signage-midnight-transit-diagram",
+   "verdict": "competitive",
+   "label": "Схема метро",
+   "lineage": "эмалевая схема метро",
+   "thesis": "Копилки — линии, переливы и долги — пересадки между ними.",
+   "palette": [
+    "#0a1230",
+    "#e5332a",
+    "#2f6bff",
+    "#ffb000",
+    "#2fb86b"
+   ],
+   "materials": [
+    "эмаль",
+    "белые станции"
+   ],
+   "viewport": "Полночно-синее поле, линии копилок с остатками на станциях.",
+   "case": "Отлично показывает переливы и долги; слабее для ежедневного ввода суммы.",
+   "risk": "Схема обещает маршрут, а у денег нет географии — легко запутать.",
+   "html": ".impeccable/mocks/decision/transit.html",
+   "htmlFrame": "390x844"
+  },
+  {
+   "id": "challenger-ticket",
+   "kind": "challenger",
+   "catalogId": "vernacular-ephemera-jet-age-ticket-wallet",
+   "verdict": "competitive",
+   "label": "Авиабилет-кошелёк",
+   "lineage": "бумажный кошелёк билетов эпохи реактивных самолётов",
+   "thesis": "Расходы — купоны: проведено, использовано, аннулировано — штампом, а не удалением.",
+   "palette": [
+    "#0e1b3d",
+    "#d7263d",
+    "#f4f1ea",
+    "#6b4fd0"
+   ],
+   "materials": [
+    "купонная бумага",
+    "копирка",
+    "штамп"
+   ],
+   "viewport": "Купоны с копирочными цифрами, штамп VOID для отменённого.",
+   "case": "Идеально ложится на историю и отмену; проигрывает на узнаваемости личных финансов.",
+   "risk": "Светлая купонная бумага тянет к светлой теме.",
+   "html": ".impeccable/mocks/decision/ticket.html",
+   "htmlFrame": "390x844"
+  },
+  {
+   "id": "challenger-exposure",
+   "kind": "challenger",
+   "catalogId": "operate-b-exposure-record-zone-sheets",
+   "verdict": "declined",
+   "label": "Фотопечать",
+   "lineage": "запись экспозиции в фотолаборатории",
+   "palette": [
+    "#111111",
+    "#bbbbbb",
+    "#d6247e"
+   ],
+   "materials": [
+    "штриховка",
+    "плёнка"
+   ],
+   "case": "Не подходит: штриховка вместо цветов копилок.",
+   "kept": "Градации серого как состояния."
+  },
+  {
+   "id": "challenger-manual",
+   "kind": "challenger",
+   "catalogId": "rw-manual-acetate-tab-board",
+   "verdict": "declined",
+   "label": "Мануал с ацетатом",
+   "lineage": "справочник программного обеспечения",
+   "palette": [
+    "#e36414",
+    "#f2b705",
+    "#2a9d8f",
+    "#3a0ca3"
+   ],
+   "materials": [
+    "ацетат",
+    "картон"
+   ],
+   "case": "Не подходит: метафора книги мешает приложению на телефоне.",
+   "kept": "Цветные вкладки как навигация."
+  },
+  {
+   "id": "challenger-orienteering",
+   "kind": "challenger",
+   "catalogId": "notation-diagram-systems-orienteering-map",
+   "verdict": "declined",
+   "label": "Карта ориентирования",
+   "lineage": "спортивные карты",
+   "palette": [
+    "#ffffff",
+    "#7b2d8e",
+    "#6aa84f"
+   ],
+   "materials": [
+    "изолинии"
+   ],
+   "case": "Не подходит: карта местности без денег.",
+   "kept": "Фиолетовый как активный маршрут."
+  },
+  {
+   "id": "challenger-bitmap",
+   "kind": "challenger",
+   "catalogId": "emigre-bitmap-specimen",
+   "verdict": "declined",
+   "label": "Битмап-шрифт",
+   "lineage": "Emigre",
+   "palette": [
+    "#ffffff",
+    "#000000"
+   ],
+   "materials": [
+    "пиксель"
+   ],
+   "case": "Не подходит: пиксельные цифры вредят чтению сумм.",
+   "kept": "Честные целые кратные размеры."
+  }
+ ],
+ "reroll": {
+  "registers": [
+   "safer",
+   "bolder"
+  ]
+ },
+ "canon": true,
+ "canonCard": {
+  "label": "Премиальный тёмный fintech",
+  "thesis": "То, что ждёшь от категории — Mercury/Ramp, исполнено безупречно.",
+  "palette": [
+   "#0b0d12",
+   "#171a22",
+   "#6366f1",
+   "#e6e8ee"
+  ],
+  "materials": [
+   "тёмные карточки",
+   "тонкие границы"
+  ],
+  "viewport": "Крупный баланс, карточки копилок, нижняя навигация.",
+  "risk": "Неотличим от конкурентов по замыслу.",
+  "html": ".impeccable/mocks/decision/canon.html",
+  "htmlFrame": "390x844"
+ },
+ "steer": true
+}

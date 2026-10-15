@@ -1,0 +1,169 @@
+{
+ "title": "Новый стиль для money-manager — смелая подборка",
+ "question": "Тёмные, выразительные и при этом сдержанные. Выбирай одну или перебрось снова.",
+ "options": [
+  {
+   "id": "lexicon",
+   "kind": "challenger",
+   "catalogId": "rw-lexicon-shoulder-and-plate",
+   "verdict": "wins",
+   "label": "Словарная статья",
+   "kicker": "THE ROLL",
+   "lineage": "словарь XIX века: статьи, поля, цветные таблицы",
+   "thesis": "Копилки — статьи словаря на графитовой странице; цвет живёт только в цветных таблицах-пластинах.",
+   "palette": [
+    "#121110",
+    "#e9e2d0",
+    "#d9482b",
+    "#e8b730",
+    "#2f9e7a",
+    "#3d5bd9"
+   ],
+   "materials": [
+    "типографская печать",
+    "хромолитографическая пластина",
+    "линейка"
+   ],
+   "viewport": "Заголовок страницы с «направляющими словами», итог крупно, копилки как статьи с цветной пластиной.",
+   "risk": "Книжная метафора: без дисциплины читается как оформление, а не как приложение.",
+   "case": "Минимально по цвету и очень выразительно; цвет копилок остаётся только в пластинах.",
+   "html": ".impeccable/mocks/decision/lexicon.html",
+   "htmlFrame": "390x844"
+  },
+  {
+   "id": "challenger-feed",
+   "kind": "challenger",
+   "catalogId": "pop-culture-shelf-vertical-video-feed-surface",
+   "verdict": "competitive",
+   "label": "Копилка на весь экран",
+   "lineage": "вертикальная лента на весь экран",
+   "thesis": "Одна копилка занимает весь экран; следующая — одним свайпом.",
+   "palette": [
+    "#06201f",
+    "#13b5a6",
+    "#f4fffd"
+   ],
+   "materials": [
+    "сплошной цвет",
+    "мягкий градиент"
+   ],
+   "viewport": "Копилка во весь экран с огромной суммой, справа колонка действий.",
+   "case": "Очень телефонно и эмоционально; хуже показывает все копилки сразу.",
+   "risk": "Нет обзора: чтобы сравнить копилки, нужен отдельный экран.",
+   "html": ".impeccable/mocks/decision/feed.html",
+   "htmlFrame": "390x844"
+  },
+  {
+   "id": "challenger-console",
+   "kind": "challenger",
+   "catalogId": "digital-design-canon-dark-first-developer-console",
+   "verdict": "competitive",
+   "label": "Графитовая панель",
+   "lineage": "тёмная рабочая панель с тонкими швами",
+   "thesis": "Графит, тонкие швы вместо теней, цвет только как состояние копилок.",
+   "palette": [
+    "#111214",
+    "#1a1c1f",
+    "#7dd3fc",
+    "#fbbf24",
+    "#a3e635"
+   ],
+   "materials": [
+    "графит",
+    "волосяные линии"
+   ],
+   "viewport": "Панели с моно-цифрами, цветные метки состояния, изолированные опасные действия.",
+   "case": "Самый спокойный и строгий; слабее по выразительности.",
+   "risk": "Близок к привычному тёмному fintech.",
+   "html": ".impeccable/mocks/decision/console.html",
+   "htmlFrame": "390x844"
+  },
+  {
+   "id": "challenger-rack",
+   "kind": "challenger",
+   "catalogId": "rw-timetable-slide-rack",
+   "verdict": "competitive",
+   "label": "Стеклянные слайды",
+   "lineage": "карманное расписание на световом столе",
+   "thesis": "Копилки — наклонные тонированные стёкла на тёплой подсветке; один размер шрифта.",
+   "palette": [
+    "#1a1308",
+    "#d9a21b",
+    "#2b3a42",
+    "#f2ead8",
+    "#d9482b"
+   ],
+   "materials": [
+    "тонированное стекло",
+    "подсветка"
+   ],
+   "viewport": "Стопка наклонённых стеклянных плит с суммами, свет бежит по основанию.",
+   "case": "Самый запоминающийся силуэт; плотность чтения ниже.",
+   "risk": "Наклон ломает скан колонок на мелких экранах.",
+   "html": ".impeccable/mocks/decision/rack.html",
+   "htmlFrame": "390x844"
+  },
+  {
+   "id": "challenger-boarding",
+   "kind": "challenger",
+   "catalogId": "vernacular-ephemera-boarding-pass-and-gate-board",
+   "verdict": "declined",
+   "label": "Табло вылетов",
+   "lineage": "посадочный талон и табло",
+   "palette": [
+    "#101010",
+    "#ffffff",
+    "#ffb000"
+   ],
+   "materials": [
+    "моно",
+    "табло"
+   ],
+   "case": "Не подходит: повторяет уже показанное «табло/купоны».",
+   "kept": "Изменённое значение держит подсветку, пока его не заметили."
+  },
+  {
+   "id": "challenger-vfont",
+   "kind": "challenger",
+   "catalogId": "variable-font-specimen",
+   "verdict": "declined",
+   "label": "Вариативный шрифт",
+   "lineage": "интерактивный шрифтовой образец",
+   "palette": [
+    "#000000",
+    "#ffffff"
+   ],
+   "materials": [
+    "глифы"
+   ],
+   "case": "Не подходит: сама игра шрифтом не про деньги.",
+   "kept": "Вес цифры как величина суммы."
+  }
+ ],
+ "reroll": {
+  "registers": [
+   "safer",
+   "bolder"
+  ]
+ },
+ "canon": true,
+ "canonCard": {
+  "label": "Премиальный тёмный fintech",
+  "thesis": "Как Mercury, Ramp и Linear: тёмные карточки, тонкие границы, один акцент.",
+  "palette": [
+   "#0b0d12",
+   "#171a22",
+   "#6366f1",
+   "#e6e8ee"
+  ],
+  "materials": [
+   "тёмные карточки",
+   "тонкие границы"
+  ],
+  "viewport": "Крупный баланс, карточки копилок, нижняя навигация.",
+  "risk": "Неотличим от конкурентов по замыслу.",
+  "html": ".impeccable/mocks/decision/canon.html",
+  "htmlFrame": "390x844"
+ },
+ "steer": true
+}

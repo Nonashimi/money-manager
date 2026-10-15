@@ -1,0 +1,218 @@
+{
+ "title": "Новый стиль для money-manager",
+ "question": "Выпал «Марочный лист». Оставить его, выбрать другой стиль или перебросить кубик.",
+ "options": [
+  {
+   "id": "stamp-sheet",
+   "kind": "assigned",
+   "label": "Марочный лист",
+   "kicker": "THE ROLL",
+   "lineage": "советские и казахстанские почтовые блоки, филателия",
+   "thesis": "Каждая копилка — почтовая марка: номинал-сумма крупным гравированным числом.",
+   "palette": [
+    "#0e1220",
+    "#e9dfc4",
+    "#c8462f",
+    "#2f6f8f",
+    "#d9a441"
+   ],
+   "materials": [
+    "гравюра",
+    "перфорация",
+    "гашение"
+   ],
+   "viewport": "Лист марок: «Доступно к тратам» огромным номиналом, копилки сеткой марок с перфорированным краем.",
+   "risk": "Если гравюрные детали мелкие, на телефоне теряется читаемость сумм.",
+   "raised": [
+    {
+     "from": "Crouwel",
+     "raise": "Сетка перфорации задана токенами: размеры всех марок кратны одной ячейке."
+    },
+    {
+     "from": "Ikeda",
+     "raise": "Суммы только табличными цифрами, колонки выровнены по разряду."
+    },
+    {
+     "from": "Mascots",
+     "raise": "У каждой копилки своя подпись-строка (имя, заметка), как у номинала."
+    }
+   ],
+   "html": ".impeccable/mocks/decision/stamp-sheet.html",
+   "htmlFrame": "390x844"
+  },
+  {
+   "id": "mosaic",
+   "kind": "grounded",
+   "label": "Алматинская мозаика",
+   "kicker": "IMPECCABLE’S PICK",
+   "lineage": "советская монументальная мозаика, Алматы 1970-х",
+   "thesis": "Копилки — панно из насыщенных плиток; уровень остатка — высота залитой мозаики.",
+   "palette": [
+    "#10141c",
+    "#1f8a8a",
+    "#e4572e",
+    "#f2b134",
+    "#4c6ef5"
+   ],
+   "materials": [
+    "смальта",
+    "шов раствора",
+    "плитка"
+   ],
+   "viewport": "Крупный итог, под ним копилки как мозаичные панели, заполненные снизу по остатку.",
+   "risk": "Самая узнаваемая для категории «копилки с цветом» — легко стать пёстрым.",
+   "html": ".impeccable/mocks/decision/mosaic.html",
+   "htmlFrame": "390x844"
+  },
+  {
+   "id": "challenger-crouwel",
+   "kind": "challenger",
+   "catalogId": "crouwel-grid-specimen",
+   "verdict": "competitive",
+   "label": "Сетка Краувела",
+   "lineage": "Wim Crouwel, сеточные шрифтовые постеры",
+   "thesis": "Видимая модульная сетка, суммы — монументальные цифры из ячеек.",
+   "palette": [
+    "#0b1020",
+    "#2d3bff",
+    "#e8ecff",
+    "#7b88c8"
+   ],
+   "materials": [
+    "миллиметровка",
+    "сетка",
+    "плоский цвет"
+   ],
+   "viewport": "Тёмный лист с видимой сеткой, сумма гигантскими цифрами, копилки — ячейки.",
+   "case": "Хорошо ложится на цифры; проигрывает на дружелюбии и личной узнаваемости.",
+   "risk": "Читается как холодный постер, а не как личный дневник денег.",
+   "html": ".impeccable/mocks/decision/crouwel.html",
+   "htmlFrame": "390x844"
+  },
+  {
+   "id": "challenger-signage",
+   "kind": "challenger",
+   "catalogId": "wayfinding-cartography-signage-terminal-yellow-wayfinding",
+   "verdict": "competitive",
+   "label": "Табло аэропорта",
+   "lineage": "международная система навигационных табло",
+   "thesis": "Одно сообщение на панель: «сколько можно потратить» — как номер выхода.",
+   "palette": [
+    "#0d0f12",
+    "#ffd21f",
+    "#f4f4f0",
+    "#2a2f38"
+   ],
+   "materials": [
+    "жёлтая панель",
+    "чёрный гротеск",
+    "пиктограммы"
+   ],
+   "viewport": "Жёлтая панель с главной суммой, под ней полосы-копилки со стрелками и числами.",
+   "case": "Очень чёткая иерархия; слабее по идентификации: личные финансы ≠ аэропорт.",
+   "risk": "Жёлтый на тёмном быстро утомляет при ежедневном использовании.",
+   "html": ".impeccable/mocks/decision/signage.html",
+   "htmlFrame": "390x844"
+  },
+  {
+   "id": "challenger-mascot",
+   "kind": "challenger",
+   "catalogId": "pop-culture-shelf-character-goods-catalog",
+   "verdict": "declined",
+   "label": "Каталог персонажей",
+   "lineage": "каталог милых персонажей",
+   "palette": [
+    "#fbe3ea",
+    "#ffd9a0",
+    "#bfe3d0"
+   ],
+   "materials": [
+    "пастель",
+    "контур"
+   ],
+   "case": "Не подходит: детская ласковость вредит доверию к деньгам.",
+   "kept": "У каждой копилки своя подпись."
+  },
+  {
+   "id": "challenger-laban",
+   "kind": "challenger",
+   "catalogId": "notation-diagram-systems-labanotation",
+   "verdict": "declined",
+   "label": "Лабанотация",
+   "lineage": "запись танца",
+   "palette": [
+    "#ffffff",
+    "#111111"
+   ],
+   "materials": [
+    "бумага",
+    "блоки"
+   ],
+   "case": "Не подходит: симметричная нотация мешает привычному списку.",
+   "kept": "Длительность и размер — длина блока."
+  },
+  {
+   "id": "challenger-annual",
+   "kind": "challenger",
+   "catalogId": "design-annual-s-plate-section",
+   "verdict": "declined",
+   "label": "Дизайн-ежегодник",
+   "lineage": "печатные таблицы дизайн-ежегодника",
+   "palette": [
+    "#f5f4f6",
+    "#16181a",
+    "#dcddf3"
+   ],
+   "materials": [
+    "бумага",
+    "метки приводки"
+   ],
+   "case": "Не подходит: светлый лист ломает зафиксированную тёмную тему.",
+   "kept": "Дисциплина волосяных линий."
+  },
+  {
+   "id": "challenger-ikeda",
+   "kind": "challenger",
+   "catalogId": "ikeda-datamatics",
+   "verdict": "declined",
+   "label": "Ikeda datamatics",
+   "lineage": "data-sublime, штрихкод и синусоиды",
+   "palette": [
+    "#000000",
+    "#ffffff"
+   ],
+   "materials": [
+    "штрихкод",
+    "моно"
+   ],
+   "case": "Не подходит: стробоскоп и ч/б не для ежедневных денег.",
+   "kept": "Плотные табличные цифры."
+  }
+ ],
+ "reroll": {
+  "registers": [
+   "safer",
+   "bolder"
+  ]
+ },
+ "canon": true,
+ "canonCard": {
+  "label": "Премиальный тёмный fintech",
+  "thesis": "То, что ждёшь от категории — Mercury/Ramp, исполнено безупречно.",
+  "palette": [
+   "#0b0d12",
+   "#171a22",
+   "#6366f1",
+   "#e6e8ee"
+  ],
+  "materials": [
+   "тёмные карточки",
+   "тонкие границы"
+  ],
+  "viewport": "Крупный баланс, карточки копилок с графиками, нижняя навигация.",
+  "risk": "Неотличим от конкурентов по замыслу.",
+  "html": ".impeccable/mocks/decision/canon.html",
+  "htmlFrame": "390x844"
+ },
+ "steer": true
+}

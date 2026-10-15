@@ -15,9 +15,23 @@ const authStore = useAuthStore();
 
 <template>
   <UApp>
-    <AppHeader v-if="authStore.isAuthenticated" />
+    <div
+      v-if="authStore.isAuthenticated"
+      class="flex min-h-dvh"
+    >
+      <AppSidebar />
+      <div class="min-w-0 flex-1">
+        <div class="lg:hidden">
+          <AppHeader />
+        </div>
+        <UMain class="pb-24 lg:pb-0">
+          <NuxtPage />
+        </UMain>
+      </div>
+      <AppTabBar />
+    </div>
 
-    <UMain>
+    <UMain v-else>
       <NuxtPage />
     </UMain>
   </UApp>

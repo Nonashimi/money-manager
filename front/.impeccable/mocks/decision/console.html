@@ -1,0 +1,35 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:390px;height:844px;overflow:hidden;background:#111214;color:#d7dae0;font:400 14px 'Golos Text',sans-serif;position:relative}
+.top{padding:18px 16px 12px;display:flex;justify-content:space-between;font:400 12px 'JetBrains Mono';color:#7b808a;border-bottom:1px solid #23262b}
+.pn{border-bottom:1px solid #23262b;padding:12px 16px}
+.pn h4{font:600 10px 'Golos Text';letter-spacing:.14em;text-transform:uppercase;color:#7b808a;margin-bottom:8px}
+.big{font:600 40px/1 'JetBrains Mono';letter-spacing:-.04em;color:#fff}
+.big span{color:#7b808a;font-size:22px}
+.spark{display:flex;gap:3px;align-items:flex-end;height:30px;margin-top:10px}
+.spark i{flex:1;background:#2a2d33;height:var(--h)}.spark i:last-child{background:#7dd3fc}
+.row{display:grid;grid-template-columns:10px 1fr auto auto;gap:12px;align-items:center;padding:11px 16px;border-bottom:1px solid #23262b}
+.row i{width:8px;height:8px;border-radius:2px;background:var(--c)}
+.row b{font:600 15px 'JetBrains Mono'}.row small{font:400 12px 'JetBrains Mono';color:#7b808a;width:44px;text-align:right}
+.row.w b{color:#fbbf24}
+.danger{margin:18px 16px 0;border:1px solid #3a2224;color:#d97a7a;font:600 12px 'Golos Text';padding:10px;text-align:center;letter-spacing:.06em;width:150px}
+.nav{position:absolute;bottom:0;left:0;right:0;height:64px;background:#0d0e10;border-top:1px solid #23262b;display:flex;justify-content:space-around;align-items:center;font-size:11px;color:#7b808a;letter-spacing:.06em;text-transform:uppercase}
+.nav .on{color:#7dd3fc}
+.add{position:absolute;right:16px;bottom:80px;background:#7dd3fc;color:#0b0c0e;font:600 13px 'JetBrains Mono';padding:12px 16px;border-radius:4px}
+</style></head><body>
+<div class="top"><span>2026-10-15</span><span>↺ undo</span></div>
+<div class="pn"><h4>Доступно к тратам</h4><div class="big">184 500<span> ₸</span></div>
+<div class="spark" style="--h:30%"><i style="--h:40%"></i><i style="--h:55%"></i><i style="--h:35%"></i><i style="--h:70%"></i><i style="--h:60%"></i><i style="--h:50%"></i><i style="--h:80%"></i><i style="--h:65%"></i><i style="--h:90%"></i></div></div>
+<div class="pn" style="padding-bottom:0"><h4>Расходные копилки</h4></div>
+<div class="row" style="--c:#a3e635"><i></i><span>Нужды</span><small>55%</small><b>62 400</b></div>
+<div class="row w" style="--c:#fbbf24"><i></i><span>Развлечения</span><small>15%</small><b>18 900</b></div>
+<div class="row" style="--c:#7dd3fc"><i></i><span>Транспорт</span><small>10%</small><b>24 100</b></div>
+<div class="row" style="--c:#c4b5fd"><i></i><span>Еда</span><small>20%</small><b>79 100</b></div>
+<div class="pn" style="padding-bottom:0;margin-top:6px"><h4>Накоплено</h4></div>
+<div class="row" style="--c:#64748b"><i></i><span>Подушка</span><small>—</small><b>405 000</b></div>
+<div class="danger">Сбросить историю</div>
+<div class="add">+ расход</div>
+<div class="nav"><span class="on">Копилки</span><span>Доска</span><span>Долги</span><span>История</span></div>
+</body></html>
